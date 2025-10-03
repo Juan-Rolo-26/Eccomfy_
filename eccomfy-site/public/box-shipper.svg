@@ -1,0 +1,6 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect x="100" y="140" width="520" height="280" fill="#EAF6EA" stroke="#0D47A1" stroke-width="4" rx="8"/>
+  <path d="M100 140 L360 60 L620 140" fill="#D7E8FF" stroke="#0D47A1" stroke-width="4"/>
+  <circle cx="360" cy="280" r="60" fill="#FFB703" opacity="0.25"/>
+  <text x="268" y="290" font-size="34" font-family="Arial" fill="#0D47A1">Shipper</text>
+</svg>

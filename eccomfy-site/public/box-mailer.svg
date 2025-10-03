@@ -1,0 +1,7 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <rect x="80" y="120" width="520" height="300" fill="#E5EEF9" stroke="#0D47A1" stroke-width="4" rx="18"/>
+  <rect x="140" y="90" width="440" height="50" fill="#0D47A1" rx="10"/>
+  <rect x="140" y="420" width="440" height="50" fill="#0D47A1" rx="10"/>
+  <circle cx="340" cy="270" r="60" fill="#FFB703" opacity="0.25"/>
+  <text x="260" y="285" font-size="36" font-family="Arial" fill="#0D47A1">Mailer</text>
+</svg>
