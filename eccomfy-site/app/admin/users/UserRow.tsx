@@ -48,6 +48,9 @@ export default function UserRow({ user, isLastStaff }: { user: UserSummary; isLa
               Rol actual: {user.is_staff ? "Staff" : "Cliente"}
               {user.is_staff && isLastStaff ? " (último staff)" : ""}
             </p>
+            <p className="text-xs text-white/50">
+              Estado de email: {user.email_verified ? "Verificado" : "Pendiente"}
+            </p>
           </div>
           <ActionButtons isStaff={user.is_staff} disableDemote={isLastStaff} />
         </div>

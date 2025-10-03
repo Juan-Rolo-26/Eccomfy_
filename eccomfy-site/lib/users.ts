@@ -6,6 +6,7 @@ export type UserSummary = {
   email: string;
   is_staff: boolean;
   created_at: string;
+  email_verified: boolean;
 };
 
 const mapRow = (row: {
@@ -14,12 +15,14 @@ const mapRow = (row: {
   email: string;
   is_staff: number;
   created_at: string;
+  email_verified_at: string | null;
 }): UserSummary => ({
   id: row.id,
   name: row.name,
   email: row.email,
   is_staff: Boolean(row.is_staff),
   created_at: row.created_at,
+  email_verified: Boolean(row.email_verified_at),
 });
 
 export function getAllUsers(): UserSummary[] {
@@ -31,7 +34,7 @@ export function getAllUsers(): UserSummary[] {
       is_staff: number;
       created_at: string;
     }>(
-      "SELECT id, name, email, is_staff, created_at FROM users ORDER BY created_at DESC",
+      "SELECT id, name, email, is_staff, created_at, email_verified_at FROM users ORDER BY created_at DESC",
     )
     .all();
   return rows.map(mapRow);
@@ -45,7 +48,8 @@ export function getUserById(id: number): UserSummary | undefined {
       email: string;
       is_staff: number;
       created_at: string;
-    }>("SELECT id, name, email, is_staff, created_at FROM users WHERE id = ?")
+      email_verified_at: string | null;
+    }>("SELECT id, name, email, is_staff, created_at, email_verified_at FROM users WHERE id = ?")
     .get(id);
   return row ? mapRow(row) : undefined;
 }
@@ -57,4 +61,8 @@ export function setUserStaff(id: number, isStaff: boolean): void {
 export function getStaffCount(): number {
   const row = db.prepare<{ count: number }>("SELECT COUNT(*) as count FROM users WHERE is_staff = 1").get();
   return row?.count ?? 0;
+}
+
+export function deleteUserById(id: number): void {
+  db.prepare("DELETE FROM users WHERE id = ?").run(id);
 }
