@@ -171,6 +171,7 @@ export async function sendEmailVerificationEmail(user: {
   id: number;
   email: string;
   name: string;
+  is_staff?: boolean;
 }): Promise<Date> {
   const { code, expiresAt } = await createEmailVerificationToken(user.id);
   const appUrl = getAppUrl();
@@ -191,7 +192,13 @@ export async function sendEmailVerificationEmail(user: {
 
   const text = `Hola ${displayName},\n\nTu código de verificación es: ${code}.\nVence en ${minutes} minutos.\nIngresá el código en ${verifyUrl} para activar tu cuenta.\n\nSi no creaste una cuenta, ignorá este email.`;
 
-  await sendMail({ to: user.email, subject, html, text });
+  await sendMail({
+    to: user.email,
+    subject,
+    html,
+    text,
+    channel: user.is_staff ? "staff" : "default",
+  });
 
   return expiresAt;
 }
@@ -247,7 +254,12 @@ export async function resendEmailVerification(email: string): Promise<Date> {
     throw new EmailVerificationError("EMAIL_ALREADY_VERIFIED");
   }
 
-  return sendEmailVerificationEmail(user);
+  return sendEmailVerificationEmail({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    is_staff: Boolean(user.is_staff),
+  });
 }
 
 async function createPasswordResetToken(userId: number): Promise<{ token: string; expiresAt: Date }> {
@@ -291,7 +303,13 @@ export async function requestPasswordReset(email: string): Promise<void> {
 
   const text = `Hola ${displayName},\n\nUsá este enlace para crear una nueva contraseña (vence en ${minutes} minutos): ${resetUrl}\n\nSi no solicitaste el cambio, podés ignorar este correo.`;
 
-  await sendMail({ to: user.email, subject, html, text });
+  await sendMail({
+    to: user.email,
+    subject,
+    html,
+    text,
+    channel: user.is_staff ? "staff" : "default",
+  });
 }
 
 export async function resetPasswordWithToken(token: string, newPassword: string): Promise<SafeUser> {

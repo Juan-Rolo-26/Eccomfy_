@@ -6,13 +6,28 @@ Landing, editor 3D simulado y backoffice inspirado en el flujo de Packlane.
 
 Antes de arrancar necesitás definir las siguientes variables en un archivo `.env.local`:
 
+Podés copiar el archivo `.env.example` como base:
+
 ```bash
-RESEND_API_KEY= # API key de https://resend.com/ para enviar correos transaccionales
-MAIL_FROM="Eccomfy <no-reply@tudominio.com>" # Remitente que verán tus clientes
-APP_URL="http://localhost:3000" # URL pública usada en los enlaces de verificación y reseteo
+cp .env.example .env.local
 ```
 
-> ⚠️ Sin `RESEND_API_KEY` y `MAIL_FROM` no se podrán enviar los códigos de verificación ni los enlaces de restablecimiento.
+Luego completá los valores reales:
+
+```bash
+# Canal principal (clientes)
+RESEND_API_KEY=                # API key de https://resend.com/ para correos transaccionales
+MAIL_FROM="Eccomfy <no-reply@tudominio.com>"  # Remitente que verán tus clientes
+
+# Canal alternativo para staff (opcional)
+RESEND_STAFF_API_KEY=          # API key asociada al remitente de staff (ej. eccomfyarg@gmail.com)
+MAIL_FROM_STAFF="Eccomfy Staff <eccomfyarg@gmail.com>"
+
+APP_URL="http://localhost:3000"             # URL pública usada en los enlaces de verificación y reseteo
+```
+
+> ⚠️ Si no definís `RESEND_API_KEY` y `MAIL_FROM` la app no podrá enviar códigos de verificación ni enlaces de restablecimiento.
+> Si completás además `RESEND_STAFF_API_KEY` y `MAIL_FROM_STAFF`, los correos dirigidos a usuarios con rol staff usarán ese remitente.
 
 ## Scripts
 
