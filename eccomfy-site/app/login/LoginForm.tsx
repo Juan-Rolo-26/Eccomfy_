@@ -22,6 +22,9 @@ function SubmitButton() {
 
 export default function LoginForm() {
   const [state, formAction] = useFormState(loginAction, INITIAL_STATE);
+  const verificationUrl = state.needsVerification
+    ? `/verify-email?email=${encodeURIComponent(state.email ?? "")}`
+    : "/verify-email";
 
   return (
     <form action={formAction} className="mt-8 space-y-4">
@@ -34,6 +37,7 @@ export default function LoginForm() {
           name="email"
           type="email"
           required
+          defaultValue={state.email}
           className="mt-2 w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
           placeholder="nombre@empresa.com"
         />
@@ -54,12 +58,28 @@ export default function LoginForm() {
       </div>
 
       {state.error ? (
-        <p className="rounded-2xl border border-brand-yellow/40 bg-brand-yellow/10 px-4 py-3 text-sm text-brand-yellow">
-          {state.error}
-        </p>
+        <div className="space-y-3 rounded-2xl border border-brand-yellow/40 bg-brand-yellow/10 px-4 py-3 text-sm text-brand-yellow">
+          <p>{state.error}</p>
+          {state.needsVerification ? (
+            <p>
+              Completá la verificación desde {""}
+              <Link href={verificationUrl} className="font-semibold underline">
+                esta página
+              </Link>{" "}
+              para poder ingresar.
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       <SubmitButton />
+
+      <p className="text-sm text-white/70">
+        ¿Olvidaste tu contraseña? {""}
+        <Link href="/forgot-password" className="font-semibold text-brand-yellow hover:underline">
+          Restablecela acá
+        </Link>
+      </p>
 
       <p className="text-sm text-white/70">
         ¿No tenés cuenta? {""}

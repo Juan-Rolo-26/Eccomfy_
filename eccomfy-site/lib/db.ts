@@ -20,6 +20,7 @@ db.exec(`
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     is_staff INTEGER NOT NULL DEFAULT 0,
+    email_verified_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -28,6 +29,26 @@ db.exec(`
     user_id INTEGER NOT NULL,
     token TEXT NOT NULL UNIQUE,
     expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    code_hash TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    consumed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    consumed_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
@@ -129,12 +150,31 @@ try {
   }
 }
 
+try {
+  db.prepare("ALTER TABLE users ADD COLUMN email_verified_at TEXT").run();
+  db.prepare(
+    "UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at)",
+  ).run();
+} catch (error) {
+  if (
+    !(
+      error instanceof Error &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("duplicate column name")
+    )
+  ) {
+    throw error;
+  }
+}
+
 export type DbUser = {
   id: number;
   name: string;
   email: string;
   password_hash: string;
   is_staff: number;
+  email_verified_at: string | null;
   created_at: string;
 };
 

@@ -2,7 +2,9 @@
 
 import { redirect } from "next/navigation";
 
-import { createUser, signIn } from "@/lib/auth";
+import { createUser, sendEmailVerificationEmail } from "@/lib/auth";
+import { MailerNotConfiguredError } from "@/lib/mailer";
+import { deleteUserById } from "@/lib/users";
 
 export type RegisterState = {
   error?: string;
@@ -28,7 +30,22 @@ export async function registerAction(_prev: RegisterState, formData: FormData): 
 
   try {
     const user = await createUser(name, email, password);
-    await signIn(user);
+
+    try {
+      await sendEmailVerificationEmail(user);
+    } catch (error) {
+      deleteUserById(user.id);
+      if (error instanceof MailerNotConfiguredError) {
+        return {
+          error:
+            "No pudimos enviar el email de verificación porque falta configurar el servicio de correo. Avisá al administrador.",
+        };
+      }
+      console.error("sendEmailVerificationEmail", error);
+      return {
+        error: "No pudimos enviar el correo de verificación. Intentá nuevamente más tarde.",
+      };
+    }
   } catch (error) {
     if (error instanceof Error && error.message === "EMAIL_IN_USE") {
       return { error: "Ya existe una cuenta con ese email." };
@@ -37,5 +54,5 @@ export async function registerAction(_prev: RegisterState, formData: FormData): 
     return { error: "No pudimos crear tu cuenta. Intentá de nuevo." };
   }
 
-  redirect("/account");
+  redirect(`/verify-email?email=${encodeURIComponent(email)}`);
 }

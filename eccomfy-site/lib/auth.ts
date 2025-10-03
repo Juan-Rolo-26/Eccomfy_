@@ -1,13 +1,51 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { unstable_noStore as noStore } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import db, { DbUser } from "./db";
+import { getAppUrl } from "./env";
+import { sendMail } from "./mailer";
 
 const SESSION_COOKIE = "eccomfy_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 días
+const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 30; // 30 minutos
+const PASSWORD_RESET_TTL_MS = 1000 * 60 * 60; // 60 minutos
+
+export class EmailNotVerifiedError extends Error {
+  constructor() {
+    super("EMAIL_NOT_VERIFIED");
+    this.name = "EmailNotVerifiedError";
+  }
+}
+
+export type EmailVerificationErrorCode =
+  | "EMAIL_NOT_FOUND"
+  | "EMAIL_ALREADY_VERIFIED"
+  | "VERIFICATION_CODE_INVALID";
+
+export class EmailVerificationError extends Error {
+  readonly code: EmailVerificationErrorCode;
+
+  constructor(code: EmailVerificationErrorCode) {
+    super(code);
+    this.code = code;
+    this.name = "EmailVerificationError";
+  }
+}
+
+export type PasswordResetErrorCode = "TOKEN_INVALID" | "TOKEN_EXPIRED";
+
+export class PasswordResetError extends Error {
+  readonly code: PasswordResetErrorCode;
+
+  constructor(code: PasswordResetErrorCode) {
+    super(code);
+    this.code = code;
+    this.name = "PasswordResetError";
+  }
+}
 
 export type SafeUser = {
   id: number;
@@ -15,6 +53,7 @@ export type SafeUser = {
   email: string;
   created_at: string;
   is_staff: boolean;
+  email_verified: boolean;
 };
 
 type SessionRow = {
@@ -26,6 +65,23 @@ type SessionRow = {
   user_email: string;
   user_created_at: string;
   user_is_staff: number;
+  user_email_verified_at: string | null;
+};
+
+type EmailVerificationTokenRow = {
+  id: number;
+  user_id: number;
+  code_hash: string;
+  expires_at: string;
+  consumed_at: string | null;
+};
+
+type PasswordResetTokenRow = {
+  id: number;
+  user_id: number;
+  token_hash: string;
+  expires_at: string;
+  consumed_at: string | null;
 };
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
@@ -45,6 +101,7 @@ const mapUser = (row: DbUser): SafeUser => ({
   email: row.email,
   created_at: normalizeTimestamp(row.created_at),
   is_staff: Boolean(row.is_staff),
+  email_verified: Boolean(row.email_verified_at),
 });
 
 const hasAnyStaff = (): boolean => {
@@ -54,10 +111,247 @@ const hasAnyStaff = (): boolean => {
   return (result?.count ?? 0) > 0;
 };
 
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+const generateVerificationCode = (): string => {
+  return String(100000 + Math.floor(Math.random() * 900000));
+};
+
+async function createEmailVerificationToken(userId: number): Promise<{ code: string; expiresAt: Date }> {
+  db.prepare("DELETE FROM email_verification_tokens WHERE user_id = ?").run(userId);
+
+  const code = generateVerificationCode();
+  const codeHash = await bcrypt.hash(code, 10);
+  const expiresAtIso = new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS).toISOString();
+
+  db.prepare(
+    "INSERT INTO email_verification_tokens (user_id, code_hash, expires_at) VALUES (?, ?, ?)",
+  ).run(userId, codeHash, expiresAtIso);
+
+  return { code, expiresAt: new Date(expiresAtIso) };
+}
+
+function getLatestEmailVerificationToken(userId: number): EmailVerificationTokenRow | undefined {
+  const row = db
+    .prepare<EmailVerificationTokenRow>(
+      "SELECT id, user_id, code_hash, expires_at, consumed_at FROM email_verification_tokens WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+    )
+    .get(userId);
+  return row;
+}
+
+function markVerificationTokenConsumed(tokenId: number): void {
+  db.prepare("UPDATE email_verification_tokens SET consumed_at = CURRENT_TIMESTAMP WHERE id = ?").run(tokenId);
+}
+
+function getUserByIdInternal(id: number): DbUser | undefined {
+  return db
+    .prepare(
+      "SELECT id, name, email, password_hash, created_at, is_staff, email_verified_at FROM users WHERE id = ?",
+    )
+    .get(id) as DbUser | undefined;
+}
+
+function markUserEmailVerified(userId: number): DbUser {
+  db.prepare("UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ?").run(userId);
+  const updated = getUserByIdInternal(userId);
+  if (!updated) {
+    throw new Error("USER_NOT_FOUND");
+  }
+  return updated;
+}
+
+export async function sendEmailVerificationEmail(user: {
+  id: number;
+  email: string;
+  name: string;
+  is_staff?: boolean;
+}): Promise<Date> {
+  const { code, expiresAt } = await createEmailVerificationToken(user.id);
+  const appUrl = getAppUrl();
+  const verifyUrl = `${appUrl}/verify-email?email=${encodeURIComponent(user.email)}`;
+  const minutes = Math.round(EMAIL_VERIFICATION_TTL_MS / (1000 * 60));
+  const displayName = user.name?.trim() || user.email;
+  const subject = "Verificá tu cuenta en Eccomfy";
+
+  const html = `
+    <p>Hola ${escapeHtml(displayName)},</p>
+    <p>Usá este código para verificar tu cuenta de Eccomfy:</p>
+    <p style="font-size:32px;font-weight:700;letter-spacing:6px;margin:24px 0;">${code}</p>
+    <p>El código vence en ${minutes} minutos.</p>
+    <p>Si preferís, también podés verificar tu email haciendo clic en este enlace:</p>
+    <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+    <p>Si no creaste una cuenta, podés ignorar este mensaje.</p>
+  `;
+
+  const text = `Hola ${displayName},\n\nTu código de verificación es: ${code}.\nVence en ${minutes} minutos.\nIngresá el código en ${verifyUrl} para activar tu cuenta.\n\nSi no creaste una cuenta, ignorá este email.`;
+
+  await sendMail({
+    to: user.email,
+    subject,
+    html,
+    text,
+    channel: user.is_staff ? "staff" : "default",
+  });
+
+  return expiresAt;
+}
+
+export async function verifyEmailWithCode(email: string, code: string): Promise<SafeUser> {
+  const user = findUserByEmail(email);
+  if (!user) {
+    throw new EmailVerificationError("EMAIL_NOT_FOUND");
+  }
+
+  if (user.email_verified_at) {
+    throw new EmailVerificationError("EMAIL_ALREADY_VERIFIED");
+  }
+
+  const token = getLatestEmailVerificationToken(user.id);
+  if (!token) {
+    throw new EmailVerificationError("VERIFICATION_CODE_INVALID");
+  }
+
+  if (token.consumed_at) {
+    throw new EmailVerificationError("VERIFICATION_CODE_INVALID");
+  }
+
+  const expiresAt = new Date(token.expires_at);
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() < Date.now()) {
+    db.prepare("DELETE FROM email_verification_tokens WHERE id = ?").run(token.id);
+    throw new EmailVerificationError("VERIFICATION_CODE_INVALID");
+  }
+
+  const isMatch = await bcrypt.compare(code, token.code_hash);
+  if (!isMatch) {
+    throw new EmailVerificationError("VERIFICATION_CODE_INVALID");
+  }
+
+  markVerificationTokenConsumed(token.id);
+  const updatedUser = markUserEmailVerified(user.id);
+
+  if (!updatedUser.is_staff && !hasAnyStaff()) {
+    db.prepare("UPDATE users SET is_staff = 1 WHERE id = ?").run(updatedUser.id);
+    updatedUser.is_staff = 1;
+  }
+
+  return mapUser(updatedUser);
+}
+
+export async function resendEmailVerification(email: string): Promise<Date> {
+  const user = findUserByEmail(email);
+  if (!user) {
+    throw new EmailVerificationError("EMAIL_NOT_FOUND");
+  }
+
+  if (user.email_verified_at) {
+    throw new EmailVerificationError("EMAIL_ALREADY_VERIFIED");
+  }
+
+  return sendEmailVerificationEmail({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    is_staff: Boolean(user.is_staff),
+  });
+}
+
+async function createPasswordResetToken(userId: number): Promise<{ token: string; expiresAt: Date }> {
+  db.prepare("DELETE FROM password_reset_tokens WHERE user_id = ?").run(userId);
+
+  const token = randomBytes(48).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const expiresAtIso = new Date(Date.now() + PASSWORD_RESET_TTL_MS).toISOString();
+
+  db.prepare(
+    "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)",
+  ).run(userId, tokenHash, expiresAtIso);
+
+  return { token, expiresAt: new Date(expiresAtIso) };
+}
+
+const revokeSessionsForUser = (userId: number): void => {
+  db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
+};
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const user = findUserByEmail(email);
+  if (!user || !user.email_verified_at) {
+    return;
+  }
+
+  const { token } = await createPasswordResetToken(user.id);
+  const appUrl = getAppUrl();
+  const resetUrl = `${appUrl}/reset-password/${token}`;
+  const minutes = Math.round(PASSWORD_RESET_TTL_MS / (1000 * 60));
+  const displayName = user.name?.trim() || user.email;
+  const subject = "Restablecé tu contraseña en Eccomfy";
+
+  const html = `
+    <p>Hola ${escapeHtml(displayName)},</p>
+    <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+    <p>Hacé clic en el siguiente botón para crear una nueva contraseña. Este enlace vence en ${minutes} minutos.</p>
+    <p><a href="${resetUrl}">${resetUrl}</a></p>
+    <p>Si no solicitaste el cambio, ignorá este mensaje.</p>
+  `;
+
+  const text = `Hola ${displayName},\n\nUsá este enlace para crear una nueva contraseña (vence en ${minutes} minutos): ${resetUrl}\n\nSi no solicitaste el cambio, podés ignorar este correo.`;
+
+  await sendMail({
+    to: user.email,
+    subject,
+    html,
+    text,
+    channel: user.is_staff ? "staff" : "default",
+  });
+}
+
+export async function resetPasswordWithToken(token: string, newPassword: string): Promise<SafeUser> {
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const row = db
+    .prepare<PasswordResetTokenRow>(
+      "SELECT id, user_id, token_hash, expires_at, consumed_at FROM password_reset_tokens WHERE token_hash = ?",
+    )
+    .get(tokenHash);
+
+  if (!row) {
+    throw new PasswordResetError("TOKEN_INVALID");
+  }
+
+  if (row.consumed_at) {
+    throw new PasswordResetError("TOKEN_INVALID");
+  }
+
+  const expiresAt = new Date(row.expires_at);
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() < Date.now()) {
+    db.prepare("DELETE FROM password_reset_tokens WHERE id = ?").run(row.id);
+    throw new PasswordResetError("TOKEN_EXPIRED");
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(passwordHash, row.user_id);
+  db.prepare("UPDATE password_reset_tokens SET consumed_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
+  db.prepare("DELETE FROM password_reset_tokens WHERE user_id = ? AND id != ?").run(row.user_id, row.id);
+  revokeSessionsForUser(row.user_id);
+
+  const updated = getUserByIdInternal(row.user_id);
+  if (!updated) {
+    throw new PasswordResetError("TOKEN_INVALID");
+  }
+
+  return mapUser(updated);
+}
+
 export function findUserByEmail(email: string): DbUser | undefined {
   const row = db
     .prepare(
-      "SELECT id, name, email, password_hash, created_at, is_staff FROM users WHERE email = ?",
+      "SELECT id, name, email, password_hash, created_at, is_staff, email_verified_at FROM users WHERE email = ?",
     )
     .get(normalizeEmail(email)) as DbUser | undefined;
   return row;
@@ -76,7 +370,7 @@ export async function createUser(name: string, email: string, password: string):
     const info = insert.run(cleanName, cleanEmail, passwordHash, makeStaff ? 1 : 0);
     const userRow = db
       .prepare(
-        "SELECT id, name, email, password_hash, created_at, is_staff FROM users WHERE id = ?",
+        "SELECT id, name, email, password_hash, created_at, is_staff, email_verified_at FROM users WHERE id = ?",
       )
       .get(Number(info.lastInsertRowid)) as DbUser | undefined;
 
@@ -102,6 +396,10 @@ export async function verifyUser(email: string, password: string): Promise<SafeU
 
   const isValid = await bcrypt.compare(password, user.password_hash);
   if (!isValid) return null;
+
+  if (!user.email_verified_at) {
+    throw new EmailNotVerifiedError();
+  }
 
   let record = user;
   if (!record.is_staff && !hasAnyStaff()) {
@@ -141,6 +439,7 @@ function mapSessionRow(row: SessionRow | undefined): { user: SafeUser; expiresAt
       email: row.user_email,
       created_at: normalizeTimestamp(row.user_created_at),
       is_staff: Boolean(row.user_is_staff),
+      email_verified: Boolean(row.user_email_verified_at),
     },
     expiresAt,
   };
@@ -157,7 +456,8 @@ export function getSessionByToken(token: string): { user: SafeUser; expiresAt: D
         u.name as user_name,
         u.email as user_email,
         u.created_at as user_created_at,
-        u.is_staff as user_is_staff
+        u.is_staff as user_is_staff,
+        u.email_verified_at as user_email_verified_at
       FROM sessions s
       JOIN users u ON u.id = s.user_id
       WHERE s.token = ?
