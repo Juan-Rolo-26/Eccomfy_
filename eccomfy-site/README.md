@@ -6,6 +6,14 @@ Landing, editor 3D simulado y backoffice inspirado en el flujo de Packlane.
 
 Antes de arrancar necesitás definir las siguientes variables en un archivo `.env.local`:
 
+Podés copiar el archivo `.env.example` como base:
+
+```bash
+cp .env.example .env.local
+```
+
+Luego completá los valores reales:
+
 ```bash
 # Canal principal (clientes)
 RESEND_API_KEY=                # API key de https://resend.com/ para correos transaccionales
