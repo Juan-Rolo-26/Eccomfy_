@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaff } from "@/lib/auth";
-import { getStaffCount, getUserById, setUserStaff } from "@/lib/users";
+import { deleteUserById, getStaffCount, getUserById, setUserStaff } from "@/lib/users";
 
 export type ManageUserState = {
   error?: string;
@@ -52,5 +52,42 @@ export async function updateStaffStatusAction(
 
   return {
     success: makeStaff ? "Usuario actualizado como staff." : "Permiso de staff removido.",
+  };
+}
+
+export async function deleteUserAction(
+  _prevState: ManageUserState,
+  formData: FormData,
+): Promise<ManageUserState> {
+  const currentUser = await requireStaff();
+
+  const id = parseId(formData.get("id"));
+  if (!id) {
+    return { error: INITIAL_ERROR };
+  }
+
+  if (id === currentUser.id) {
+    return { error: "No podés eliminar tu propia cuenta." };
+  }
+
+  const user = getUserById(id);
+  if (!user) {
+    return { error: "El usuario no existe." };
+  }
+
+  if (user.is_staff) {
+    const staffCount = getStaffCount();
+    if (staffCount <= 1) {
+      return { error: "No podés eliminar al último usuario staff." };
+    }
+  }
+
+  deleteUserById(id);
+  revalidatePath("/admin/users");
+  revalidatePath("/account");
+  revalidatePath("/admin/content");
+
+  return {
+    success: "Usuario eliminado correctamente.",
   };
 }

@@ -180,16 +180,16 @@ export default async function Home() {
                 <div className="flex flex-col gap-6 p-6 sm:p-8">
                   <div className="grid grid-cols-2 gap-4 text-brand-navy">
                     <div className="relative col-span-2 aspect-[5/3] overflow-hidden rounded-2xl bg-white">
-                      <Image src="/box-mailer.svg" alt="Mailer" fill className="object-contain p-6" />
+                      <Image src="/a.png" alt="Mailer" fill className="object-contain p-6" />
                       <div className="absolute left-4 top-4 rounded-full bg-brand-yellow/20 px-3 py-1 text-xs font-semibold text-brand-navy">
                         Mailer premium
                       </div>
                     </div>
                     <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
-                      <Image src="/box-shipper.svg" alt="Shipper" fill className="object-contain p-4" />
+                      <Image src="/c.png" alt="Shipper" fill className="object-contain p-4" />
                     </div>
                     <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
-                      <Image src="/box-product.svg" alt="Product" fill className="object-contain p-4" />
+                      <Image src="/b.png" alt="Product" fill className="object-contain p-4" />
                     </div>
                   </div>
                   <div className="rounded-2xl border border-white/20 bg-white/70 px-5 py-4 text-sm font-semibold text-brand-navy shadow-inner">
