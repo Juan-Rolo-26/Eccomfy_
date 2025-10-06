@@ -1,11 +1,52 @@
 import db from "./db";
 
+export type ProductConfigurationSize = {
+  label: string;
+  width_mm: number;
+  height_mm: number;
+  depth_mm: number;
+  base_price: number;
+};
+
+export type ProductConfigurationMaterial = {
+  label: string;
+  description?: string | null;
+  price_modifier: number;
+};
+
+export type ProductConfigurationQuantity = {
+  label: string;
+  quantity: number;
+  price_modifier: number;
+};
+
+export type ProductConfigurationColor = {
+  label: string;
+  hex?: string | null;
+  price_modifier: number;
+};
+
+export type ProductConfiguration = {
+  sizes: ProductConfigurationSize[];
+  materials: ProductConfigurationMaterial[];
+  finishes: ProductConfigurationMaterial[];
+  printSides: ProductConfigurationMaterial[];
+  productionSpeeds: ProductConfigurationMaterial[];
+  quantities: ProductConfigurationQuantity[];
+  colors: ProductConfigurationColor[];
+  highlights: string[];
+  min_quantity?: number | null;
+  max_quantity?: number | null;
+};
+
 export type ProductStyle = {
   id: number;
+  slug: string;
   title: string;
   description: string;
   href: string;
   image: string;
+  configuration: ProductConfiguration;
 };
 
 export type Metric = {
@@ -29,13 +70,213 @@ export type Brand = {
 
 const toBoolean = (value: unknown) => Boolean(typeof value === "number" ? value : Number(value));
 
+const DEFAULT_CONFIGURATION: ProductConfiguration = {
+  sizes: [],
+  materials: [],
+  finishes: [],
+  printSides: [],
+  productionSpeeds: [],
+  quantities: [],
+  colors: [],
+  highlights: [],
+  min_quantity: null,
+  max_quantity: null,
+};
+
+type RawProductConfig = Partial<Omit<ProductConfiguration, "min_quantity" | "max_quantity"> & {
+  min_quantity?: number | string | null;
+  max_quantity?: number | string | null;
+}>;
+
+function parseNumber(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseProductConfig(rawConfig: unknown): ProductConfiguration {
+  if (!rawConfig) {
+    return { ...DEFAULT_CONFIGURATION };
+  }
+
+  const configValue = typeof rawConfig === "string" ? rawConfig : JSON.stringify(rawConfig);
+
+  try {
+    const parsed = JSON.parse(configValue) as RawProductConfig;
+
+    const normalizeMaterials = (
+      values: ProductConfigurationMaterial[] | undefined,
+    ): ProductConfigurationMaterial[] => {
+      if (!Array.isArray(values)) return [];
+      return values
+        .filter((item): item is ProductConfigurationMaterial => Boolean(item && item.label))
+        .map((item) => ({
+          label: item.label,
+          description: item.description ?? null,
+          price_modifier: parseNumber(item.price_modifier) ?? 1,
+        }));
+    };
+
+    const normalizeQuantities = (
+      values: ProductConfigurationQuantity[] | undefined,
+    ): ProductConfigurationQuantity[] => {
+      if (!Array.isArray(values)) return [];
+      return values
+        .filter((item): item is ProductConfigurationQuantity => Boolean(item && item.label))
+        .map((item) => ({
+          label: item.label,
+          quantity: Math.max(0, parseNumber(item.quantity) ?? 0),
+          price_modifier: parseNumber(item.price_modifier) ?? 1,
+        }));
+    };
+
+    const normalizeColors = (
+      values: ProductConfigurationColor[] | undefined,
+    ): ProductConfigurationColor[] => {
+      if (!Array.isArray(values)) return [];
+      return values
+        .filter((item): item is ProductConfigurationColor => Boolean(item && item.label))
+        .map((item) => ({
+          label: item.label,
+          hex: item.hex ?? null,
+          price_modifier: parseNumber(item.price_modifier) ?? 1,
+        }));
+    };
+
+    const normalizeSizes = (
+      values: ProductConfigurationSize[] | undefined,
+    ): ProductConfigurationSize[] => {
+      if (!Array.isArray(values)) return [];
+      return values
+        .filter((item): item is ProductConfigurationSize => Boolean(item && item.label))
+        .map((item) => ({
+          label: item.label,
+          width_mm: Math.max(0, parseNumber(item.width_mm) ?? 0),
+          height_mm: Math.max(0, parseNumber(item.height_mm) ?? 0),
+          depth_mm: Math.max(0, parseNumber(item.depth_mm) ?? 0),
+          base_price: Math.max(0, parseNumber(item.base_price) ?? 0),
+        }));
+    };
+
+    return {
+      sizes: normalizeSizes(parsed.sizes as ProductConfigurationSize[] | undefined),
+      materials: normalizeMaterials(parsed.materials as ProductConfigurationMaterial[] | undefined),
+      finishes: normalizeMaterials(parsed.finishes as ProductConfigurationMaterial[] | undefined),
+      printSides: normalizeMaterials(parsed.printSides as ProductConfigurationMaterial[] | undefined),
+      productionSpeeds: normalizeMaterials(parsed.productionSpeeds as ProductConfigurationMaterial[] | undefined),
+      quantities: normalizeQuantities(parsed.quantities as ProductConfigurationQuantity[] | undefined),
+      colors: normalizeColors(parsed.colors as ProductConfigurationColor[] | undefined),
+      highlights: Array.isArray(parsed.highlights)
+        ? parsed.highlights.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+        : [],
+      min_quantity: parseNumber(parsed.min_quantity),
+      max_quantity: parseNumber(parsed.max_quantity),
+    };
+  } catch (error) {
+    console.error("parseProductConfig", error);
+    return { ...DEFAULT_CONFIGURATION };
+  }
+}
+
+type ProductStyleRow = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  config: string;
+  position: number;
+};
+
 export function getProductStyles(): ProductStyle[] {
   const rows = db
-    .prepare<ProductStyle & { position: number }>(
-      "SELECT id, title, description, href, image FROM product_styles ORDER BY position ASC"
+    .prepare<ProductStyleRow>(
+      "SELECT id, slug, title, description, href, image, config, position FROM product_styles ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, title, description, href, image }) => ({ id, title, description, href, image }));
+  return rows.map(({ id, slug, title, description, href, image, config }) => ({
+    id,
+    slug,
+    title,
+    description,
+    href,
+    image,
+    configuration: parseProductConfig(config),
+  }));
+}
+
+export function getProductStyleBySlug(slug: string): ProductStyle | null {
+  const row = db
+    .prepare<ProductStyleRow>(
+      "SELECT id, slug, title, description, href, image, config, position FROM product_styles WHERE slug = ? LIMIT 1",
+    )
+    .get(slug);
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description,
+    href: row.href,
+    image: row.image,
+    configuration: parseProductConfig(row.config),
+  };
+}
+
+export function summarizeProductStyle(style: ProductStyle): { badges: string[]; highlights: string[] } {
+  const badges: string[] = [];
+  const highlights: string[] = [];
+
+  const { configuration } = style;
+
+  if (configuration.sizes.length > 0) {
+    const firstSize = configuration.sizes[0];
+    badges.push(`${firstSize.label}`);
+  }
+
+  if (configuration.materials.length > 0) {
+    badges.push(configuration.materials[0].label);
+  }
+
+  if (configuration.colors.length > 0) {
+    badges.push(`${configuration.colors.length} colores`);
+  }
+
+  if (configuration.productionSpeeds.length > 0) {
+    badges.push(configuration.productionSpeeds[0].label);
+  }
+
+  if (configuration.highlights.length > 0) {
+    highlights.push(...configuration.highlights);
+  }
+
+  if (highlights.length === 0) {
+    if (configuration.min_quantity) {
+      highlights.push(`Pedido mínimo ${configuration.min_quantity} u.`);
+    }
+    if (configuration.max_quantity) {
+      highlights.push(`Pedido máximo ${configuration.max_quantity} u.`);
+    }
+    if (configuration.quantities.length > 0) {
+      const labels = configuration.quantities.map((quantity) => `${quantity.quantity} u.`);
+      highlights.push(`Presentaciones: ${labels.join(", ")}`);
+    }
+    if (configuration.sizes.length > 1) {
+      highlights.push(`${configuration.sizes.length} medidas listas para usar.`);
+    }
+  }
+
+  const uniqueBadges = Array.from(new Set(badges)).slice(0, 4);
+  const trimmedHighlights = highlights.slice(0, 4);
+
+  return {
+    badges: uniqueBadges,
+    highlights: trimmedHighlights,
+  };
 }
 
 export function getMetrics(): Metric[] {
