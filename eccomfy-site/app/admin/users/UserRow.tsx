@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import type { UserSummary } from "@/lib/users";
-import { type ManageUserState, deleteUserAction, updateStaffStatusAction } from "./actions";
+import { type ManageUserState, deleteUserAction, updateStaffStatusAction, verifyEmailAction } from "./actions";
 
 const INITIAL_STATE: ManageUserState = {};
 
@@ -50,6 +50,7 @@ function ActionButtons({ isStaff, disableDemote }: { isStaff: boolean; disableDe
 export default function UserRow({ user, isLastStaff }: { user: UserSummary; isLastStaff: boolean }) {
   const [statusState, statusAction] = useFormState(updateStaffStatusAction, INITIAL_STATE);
   const [deleteState, deleteAction] = useFormState(deleteUserAction, INITIAL_STATE);
+  const [verifyState, verifyAction] = useFormState(verifyEmailAction, INITIAL_STATE);
 
   const handleDeleteSubmit = (event: FormEvent<HTMLFormElement>) => {
     if (
@@ -61,8 +62,14 @@ export default function UserRow({ user, isLastStaff }: { user: UserSummary; isLa
     }
   };
 
-  const message = deleteState.error || statusState.error || deleteState.success || statusState.success;
-  const isError = Boolean(deleteState.error || statusState.error);
+  const message =
+    deleteState.error ||
+    statusState.error ||
+    verifyState.error ||
+    deleteState.success ||
+    statusState.success ||
+    verifyState.success;
+  const isError = Boolean(deleteState.error || statusState.error || verifyState.error);
 
   return (
     <li className="rounded-2xl border border-white/10 bg-white/10 p-4 text-sm text-white/80">
@@ -83,6 +90,18 @@ export default function UserRow({ user, isLastStaff }: { user: UserSummary; isLa
             <input type="hidden" name="id" value={user.id} />
             <ActionButtons isStaff={user.is_staff} disableDemote={isLastStaff} />
           </form>
+          {!user.email_verified ? (
+            <form action={verifyAction} className="flex justify-end">
+              <input type="hidden" name="id" value={user.id} />
+              <button
+                type="submit"
+                className="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={verifyState.success !== undefined && !verifyState.error}
+              >
+                Verificar email
+              </button>
+            </form>
+          ) : null}
           <form action={deleteAction} onSubmit={handleDeleteSubmit} className="flex justify-end">
             <input type="hidden" name="id" value={user.id} />
             <DeleteButton disabled={isLastStaff} />
