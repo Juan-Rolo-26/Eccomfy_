@@ -3,12 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import StyleCard from "@/components/StyleCard";
 import ContactForm from "@/components/ContactForm";
-import {
-  getProductStyles,
-  getMetrics,
-  getTestimonials,
-  getBrands,
-} from "@/lib/content";
+import { getProducts, getMetrics, getTestimonials, getBrands } from "@/lib/content";
 
 type IconName = "sparkles" | "layers" | "support" | "leaf" | "grid" | "puzzle" | "check";
 
@@ -118,8 +113,8 @@ function Icon({ name }: { name: IconName }) {
 }
 
 export default async function Home() {
-  const [productStyles, metrics, testimonials, brands] = await Promise.all([
-    getProductStyles(),
+  const [products, metrics, testimonials, brands] = await Promise.all([
+    getProducts(),
     getMetrics(),
     getTestimonials(),
     getBrands(),
@@ -203,6 +198,32 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="container-xl mt-24">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+          <div className="space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Aprendé con nosotros</p>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">¿Cómo funciona la serigrafía?</h2>
+            <p className="text-sm text-white/70 sm:text-base">
+              Mirá el paso a paso del proceso de serigrafía para entender cómo logramos impresiones nítidas sobre cada pieza.
+              Compartimos consejos sobre tintas, tiempos de secado y controles de calidad para que puedas planificar mejor tus
+              proyectos.
+            </p>
+          </div>
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/60 shadow-card">
+            <div className="aspect-video">
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube.com/embed/0iX1xZ9K0wU"
+                title="Proceso de serigrafía"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 border border-white/10" aria-hidden />
+          </div>
+        </div>
+      </section>
+
       {metrics.length > 0 && (
         <section className="container-xl mt-16">
           <div className="grid gap-6 sm:grid-cols-3">
@@ -216,7 +237,7 @@ export default async function Home() {
         </section>
       )}
 
-      {productStyles.length > 0 && (
+      {products.length > 0 && (
         <section className="container-xl mt-24">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-xl space-y-3">
@@ -233,13 +254,13 @@ export default async function Home() {
             </Link>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {productStyles.map((style) => (
+            {products.map((product) => (
               <StyleCard
-                key={style.id}
-                title={style.title}
-                desc={style.description}
-                href={style.href}
-                img={style.image}
+                key={product.id}
+                title={product.title}
+                desc={product.description}
+                href={product.href}
+                img={product.image}
               />
             ))}
           </div>

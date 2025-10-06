@@ -74,12 +74,6 @@ export default async function AccountPage() {
                   Administrar usuarios
                 </Link>
                 <Link
-                  href="/admin/design-options"
-                  className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  Configurar opciones de diseño
-                </Link>
-                <Link
                   href="/design/mailer"
                   className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
@@ -134,11 +128,6 @@ export default async function AccountPage() {
                 <li>
                   <Link href="/admin/content" className="font-semibold text-brand-yellow hover:underline">
                     Administrar contenidos de la landing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin/design-options" className="font-semibold text-brand-yellow hover:underline">
-                    Configurar opciones del editor
                   </Link>
                 </li>
                 <li>

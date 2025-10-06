@@ -1,15 +1,15 @@
 import Link from "next/link";
 
 import { requireStaff } from "@/lib/auth";
-import { getProductStyles, getMetrics, getTestimonials, getBrands } from "@/lib/content";
+import { getProducts, getMetrics, getTestimonials, getBrands } from "@/lib/content";
 import {
-  ProductStyleForm,
+  ProductForm,
   MetricForm,
   TestimonialForm,
   BrandForm,
 } from "./ContentForms";
 import {
-  deleteProductStyleAction,
+  deleteProductAction,
   deleteMetricAction,
   deleteTestimonialAction,
   deleteBrandAction,
@@ -17,8 +17,8 @@ import {
 
 export default async function ContentAdminPage() {
   const user = await requireStaff();
-  const [productStyles, metrics, testimonials, brands] = await Promise.all([
-    getProductStyles(),
+  const [products, metrics, testimonials, brands] = await Promise.all([
+    getProducts(),
     getMetrics(),
     getTestimonials(),
     getBrands(),
@@ -52,7 +52,7 @@ export default async function ContentAdminPage() {
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-10">
-          <ProductStyleForm />
+          <ProductForm />
           <MetricForm />
           <TestimonialForm />
           <BrandForm />
@@ -61,13 +61,13 @@ export default async function ContentAdminPage() {
         <div className="space-y-6">
           <ContentList
             title="Productos cargados"
-            items={productStyles.map((item) => ({
+            items={products.map((item) => ({
               id: item.id,
               primary: item.title,
-              secondary: `${item.description} — ${item.href}`,
+              secondary: `${item.description} · /design/${item.slug}`,
             }))}
             emptyLabel="Todavía no hay productos."
-            deleteAction={deleteProductStyleAction}
+            deleteAction={deleteProductAction}
           />
           <ContentList
             title="Métricas cargadas"

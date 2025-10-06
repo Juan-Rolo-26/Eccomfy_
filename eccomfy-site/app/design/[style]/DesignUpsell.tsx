@@ -2,34 +2,42 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { SafeUser } from "@/lib/auth";
-
-const STYLE_IMAGES: Record<string, string> = {
-  shipper: "/box-shipper.svg",
-  product: "/box-product.svg",
-  mailer: "/box-mailer.svg",
-};
-
-const OPTION_SETS = [
-  { label: "Tamaño", value: "2.25\" × 2.25\" × 6\"" },
-  { label: "Material", value: "Cartulina premium 14 pt" },
-  { label: "Terminación", value: "Barniz gloss" },
-  { label: "Caras impresas", value: "Exterior" },
-  { label: "Cantidad", value: "250 unidades" },
-];
+import type { Product } from "@/lib/content";
 
 type Props = {
-  style: string;
+  product: Product;
   user: SafeUser | null;
 };
 
-export default function DesignUpsell({ style, user }: Props) {
-  const heroImage = STYLE_IMAGES[style] ?? STYLE_IMAGES.mailer;
-  const prettyLabel =
-    style === "shipper"
-      ? "Shipping box"
-      : style === "product"
-      ? "Product box"
-      : "Mailer";
+export default function DesignUpsell({ product, user }: Props) {
+  const firstSize = product.options.sizes[0] ?? null;
+  const firstMaterial = product.options.materials[0] ?? null;
+  const firstFinish = product.options.finishes[0] ?? null;
+  const firstPrint = product.options.printSides[0] ?? null;
+  const firstSpeed = product.options.productionSpeeds[0] ?? null;
+  const firstQuantity = product.options.quantities[0] ?? null;
+
+  const previewOptions = [
+    {
+      label: "Tamaño",
+      value: firstSize
+        ? `${firstSize.width_mm} × ${firstSize.height_mm} × ${firstSize.depth_mm} mm`
+        : "Definilo desde el panel",
+    },
+    { label: "Material", value: firstMaterial?.label ?? "Completar" },
+    { label: "Terminación", value: firstFinish?.label ?? "Completar" },
+    { label: "Caras impresas", value: firstPrint?.label ?? "Completar" },
+    { label: "Cantidad", value: firstQuantity ? `${firstQuantity.quantity} unidades` : "Configurable" },
+  ];
+
+  const basePrice = firstSize?.base_price ?? 0;
+  const modifier =
+    (firstMaterial?.price_modifier ?? 1) *
+    (firstFinish?.price_modifier ?? 1) *
+    (firstPrint?.price_modifier ?? 1) *
+    (firstSpeed?.price_modifier ?? 1) *
+    (firstQuantity?.price_modifier ?? 1);
+  const previewPrice = basePrice > 0 ? Number((basePrice * modifier).toFixed(2)) : null;
 
   const userName = user?.name.split(" ")[0] || user?.name;
   const headline = user
@@ -46,9 +54,10 @@ export default function DesignUpsell({ style, user }: Props) {
               <p className="inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-brand-navy/80">
                 Preview exclusivo
               </p>
-              <h1 className="text-4xl font-semibold">Previsualización {prettyLabel}</h1>
+              <h1 className="text-4xl font-semibold">Previsualización {product.title}</h1>
               <p className="text-brand-navy/70">
-                Ingresá con tu cuenta para desbloquear el editor interactivo. Ahí vas a poder elegir medidas, materiales y tiradas cargadas por el equipo de Eccomfy.
+                Ingresá con tu cuenta para desbloquear el editor interactivo. Ahí vas a poder elegir las medidas, materiales y
+                tiradas configuradas por el equipo de Eccomfy.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 {user ? (
@@ -78,7 +87,7 @@ export default function DesignUpsell({ style, user }: Props) {
             </div>
             <div className="relative flex-1">
               <div className="overflow-hidden rounded-3xl border border-white/60 bg-white p-6 shadow-xl">
-                <Image src={heroImage} alt={prettyLabel} width={640} height={480} className="h-auto w-full" />
+                <Image src={product.image} alt={product.title} width={640} height={480} className="h-auto w-full" />
               </div>
             </div>
           </div>
@@ -93,11 +102,11 @@ export default function DesignUpsell({ style, user }: Props) {
 
           <div className="mt-6 rounded-3xl border border-white/10 bg-white/10 p-6 text-sm text-white/80">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-yellow">Standard sizes</span>
-              <span className="rounded-full border border-white/20 px-3 py-1 text-xs text-white/60">Custom sizes</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-yellow">Configuración base</span>
+              <span className="rounded-full border border-white/20 px-3 py-1 text-xs text-white/60">Editable</span>
             </div>
             <ul className="mt-4 space-y-3">
-              {OPTION_SETS.map((option) => (
+              {previewOptions.map((option) => (
                 <li key={option.label} className="flex justify-between gap-4 border-b border-white/10 pb-3">
                   <span className="text-white/60">{option.label}</span>
                   <span className="font-medium text-white">{option.value}</span>
@@ -106,12 +115,15 @@ export default function DesignUpsell({ style, user }: Props) {
             </ul>
             <div className="mt-6 flex items-baseline gap-2 text-white">
               <span className="text-sm text-white/60">Precio unitario desde</span>
-              <span className="text-3xl font-semibold text-brand-yellow">$1.86</span>
-              <span className="text-xs text-emerald-300">Ahorra hasta 68%</span>
+              <span className="text-3xl font-semibold text-brand-yellow">
+                {previewPrice ? `$${previewPrice.toFixed(2)}` : "—"}
+              </span>
+              {firstQuantity ? (
+                <span className="text-xs text-emerald-300">Lote inicial de {firstQuantity.quantity}</span>
+              ) : null}
             </div>
             <div className="mt-4 space-y-2 text-xs text-white/60">
-              <p>Velocidad estándar: 13 – 18 días hábiles</p>
-              <p>Rush: 7 – 9 días hábiles</p>
+              {firstSpeed ? <p>{firstSpeed.label}</p> : <p>Definí velocidades de producción en el panel.</p>}
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Link
@@ -121,17 +133,15 @@ export default function DesignUpsell({ style, user }: Props) {
                 Charlar con un especialista
               </Link>
               <Link
-                href="/design/mailer"
+                href="/products"
                 className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                Explorar más estilos
+                Explorar catálogo
               </Link>
             </div>
           </div>
 
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/60">
-            {headline}
-          </div>
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-white/60">{headline}</div>
         </div>
       </div>
     </div>

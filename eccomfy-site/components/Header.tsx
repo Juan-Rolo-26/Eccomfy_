@@ -29,9 +29,8 @@ export default function Header({ user }: HeaderProps) {
     ? [
         { href: "/products", label: "Productos" },
         { href: "/design/mailer", label: "Diseñar" },
-        { href: "/admin/design-options", label: "Opciones" },
+        { href: "/admin/content", label: "Productos admin" },
         { href: "/admin/users", label: "Usuarios" },
-        { href: "/admin/content", label: "Contenido" },
         { href: "/account", label: "Mi cuenta" },
       ]
     : [
@@ -55,10 +54,10 @@ export default function Header({ user }: HeaderProps) {
           ))}
         </nav>
         <Link
-          href={user ? (user.is_staff ? "/admin/design-options" : "/design/mailer") : "/register"}
+          href={user ? (user.is_staff ? "/admin/content" : "/design/mailer") : "/register"}
           className="inline-flex items-center justify-center rounded-lg bg-brand-yellow text-brand-navy px-4 py-2 font-semibold hover:opacity-95"
         >
-          {user ? (user.is_staff ? "Panel admin" : "Nuevo diseño") : "Crear cuenta"}
+          {user ? (user.is_staff ? "Panel de productos" : "Nuevo diseño") : "Crear cuenta"}
         </Link>
       </div>
     </header>

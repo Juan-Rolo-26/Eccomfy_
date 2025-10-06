@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
-import type { DesignOptions, DesignSize, DesignMaterial, DesignQuantity } from "@/lib/designOptions";
+import type { Product, ProductOptions, ProductSizeOption, ProductChoiceOption } from "@/lib/content";
 
 const TOOL_ITEMS = [
   { emoji: "⚙️", label: "Configurar & precio" },
@@ -19,11 +19,11 @@ const TOOL_ITEMS = [
 const BoxPreview = dynamic(() => import("@/components/editor/BoxPreview"), { ssr: false });
 
 function priceSummary(
-  size: DesignSize,
-  material: DesignMaterial,
-  finish: DesignMaterial,
-  printSide: DesignMaterial,
-  speed: DesignMaterial,
+  size: ProductSizeOption,
+  material: ProductChoiceOption,
+  finish: ProductChoiceOption,
+  printSide: ProductChoiceOption,
+  speed: ProductChoiceOption,
   priceModifier: number,
   orderQuantity: number,
 ) {
@@ -40,12 +40,12 @@ function priceSummary(
 }
 
 type Props = {
-  style: string;
-  options: DesignOptions;
+  product: Product;
   canManageOptions: boolean;
 };
 
-export default function DesignerEditor({ style, options, canManageOptions }: Props) {
+export default function DesignerEditor({ product, canManageOptions }: Props) {
+  const options: ProductOptions = product.options;
   const hasAllOptions =
     options.sizes.length > 0 &&
     options.materials.length > 0 &&
@@ -60,14 +60,15 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
         <div className="rounded-[2.5rem] border border-white/15 bg-white/5 p-10 text-white">
           <h1 className="text-3xl font-semibold">Faltan opciones de diseño</h1>
           <p className="mt-3 text-white/70">
-            Aún no hay medidas ni parámetros configurados. Contactá a tu equipo de Eccomfy para cargarlos y habilitar el editor.
+            Aún no hay medidas ni parámetros configurados para este producto. Contactá a tu equipo de Eccomfy para cargarlos y
+            habilitar el editor.
           </p>
           {canManageOptions ? (
             <Link
-              href="/admin/design-options"
+              href="/admin/content"
               className="mt-6 inline-flex items-center justify-center rounded-full bg-brand-yellow px-6 py-3 text-sm font-semibold text-brand-navy transition hover:-translate-y-0.5 hover:shadow-lg"
             >
-              Ir al panel de opciones
+              Completar datos del producto
             </Link>
           ) : (
             <Link
@@ -82,12 +83,12 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
     );
   }
 
-  const [sizeId, setSizeId] = useState(options.sizes[0]?.id ?? 0);
-  const [materialId, setMaterialId] = useState(options.materials[0]?.id ?? 0);
-  const [finishId, setFinishId] = useState(options.finishes[0]?.id ?? 0);
-  const [printId, setPrintId] = useState(options.printSides[0]?.id ?? 0);
-  const [speedId, setSpeedId] = useState(options.productionSpeeds[0]?.id ?? 0);
-  const [quantityId, setQuantityId] = useState(options.quantities[0]?.id ?? 0);
+  const [sizeId, setSizeId] = useState(options.sizes[0]?.id ?? "");
+  const [materialId, setMaterialId] = useState(options.materials[0]?.id ?? "");
+  const [finishId, setFinishId] = useState(options.finishes[0]?.id ?? "");
+  const [printId, setPrintId] = useState(options.printSides[0]?.id ?? "");
+  const [speedId, setSpeedId] = useState(options.productionSpeeds[0]?.id ?? "");
+  const [quantityId, setQuantityId] = useState(options.quantities[0]?.id ?? "");
   const [orderQuantity, setOrderQuantity] = useState(() => {
     const firstStock = options.quantities[0]?.quantity ?? 0;
     if (firstStock <= 0) return 0;
@@ -228,7 +229,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-brand-blue">Editor Eccomfy</p>
-            <p className="text-sm font-semibold">Proyecto sin título</p>
+            <p className="text-sm font-semibold">Proyecto {product.title}</p>
           </div>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
@@ -310,7 +311,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <div className="flex-1">
                     <div className="relative h-[440px] w-full">
                       <BoxPreview
-                        style={style}
+                        style={product.slug}
                         viewMode={viewMode}
                         rotation={rotation}
                         zoom={zoom}
@@ -432,7 +433,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
               <div>
                 <h2 className="text-lg font-semibold text-brand-navy">Configurar & precio</h2>
                 <p className="text-xs text-brand-blue/70">
-                  Ajustá los parámetros definidos por Eccomfy para este estilo. Los precios se actualizan automáticamente.
+                  Ajustá los parámetros definidos por Eccomfy para este producto. Los precios se actualizan automáticamente.
                 </p>
               </div>
 
@@ -441,7 +442,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Tamaño</label>
                   <select
                     value={sizeId}
-                    onChange={(event) => setSizeId(Number(event.target.value))}
+                    onChange={(event) => setSizeId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.sizes.map((item) => (
@@ -456,7 +457,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Material</label>
                   <select
                     value={materialId}
-                    onChange={(event) => setMaterialId(Number(event.target.value))}
+                    onChange={(event) => setMaterialId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.materials.map((item) => (
@@ -474,7 +475,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Acabado</label>
                   <select
                     value={finishId}
-                    onChange={(event) => setFinishId(Number(event.target.value))}
+                    onChange={(event) => setFinishId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.finishes.map((item) => (
@@ -492,7 +493,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Caras impresas</label>
                   <select
                     value={printId}
-                    onChange={(event) => setPrintId(Number(event.target.value))}
+                    onChange={(event) => setPrintId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.printSides.map((item) => (
@@ -510,7 +511,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Stock</label>
                   <select
                     value={quantityId}
-                    onChange={(event) => setQuantityId(Number(event.target.value))}
+                    onChange={(event) => setQuantityId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.quantities.map((item) => (
@@ -543,7 +544,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Producción</label>
                   <select
                     value={speedId}
-                    onChange={(event) => setSpeedId(Number(event.target.value))}
+                    onChange={(event) => setSpeedId(event.target.value)}
                     className="mt-2 w-full rounded-xl border border-[#dfe3fc] bg-[#f6f7ff] px-3 py-2 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow"
                   >
                     {options.productionSpeeds.map((item) => (

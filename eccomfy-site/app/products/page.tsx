@@ -1,14 +1,29 @@
 import StyleCard from "../../components/StyleCard";
+import { getProducts } from "@/lib/content";
 
-export default function Products() {
+export default async function Products() {
+  const products = await getProducts();
+
   return (
-    <div className="container-xl py-12">
-      <h1 className="text-3xl font-bold mb-8">Productos</h1>
-      <div className="grid md:grid-cols-3 gap-6">
-        <StyleCard title="Mailer" desc="Premium para e‑commerce" href="/design/mailer" img="/box-mailer.svg" />
-        <StyleCard title="Shipping Box" desc="Resistente para envíos" href="/design/shipper" img="/box-shipper.svg" />
-        <StyleCard title="Product Box" desc="Liviana para retail" href="/design/product" img="/box-product.svg" />
-      </div>
+    <div className="container-xl space-y-16 py-12">
+      <section>
+        <h1 className="mb-8 text-3xl font-bold">Productos</h1>
+        {products.length === 0 ? (
+          <p className="text-white/70">Todavía no hay productos cargados.</p>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <StyleCard
+                key={product.id}
+                title={product.title}
+                desc={product.description}
+                href={product.href}
+                img={product.image}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

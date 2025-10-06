@@ -53,13 +53,19 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 
-  CREATE TABLE IF NOT EXISTS product_styles (
+  CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
     description TEXT NOT NULL,
-    href TEXT NOT NULL,
     image TEXT NOT NULL,
-    position INTEGER NOT NULL DEFAULT 0
+    position INTEGER NOT NULL DEFAULT 0,
+    sizes_json TEXT NOT NULL,
+    materials_json TEXT NOT NULL,
+    finishes_json TEXT NOT NULL,
+    print_sides_json TEXT NOT NULL,
+    production_speeds_json TEXT NOT NULL,
+    quantities_json TEXT NOT NULL
   );
 
   CREATE TABLE IF NOT EXISTS metrics (
@@ -84,55 +90,7 @@ db.exec(`
     position INTEGER NOT NULL DEFAULT 0
   );
 
-  CREATE TABLE IF NOT EXISTS design_sizes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    width_mm INTEGER NOT NULL,
-    height_mm INTEGER NOT NULL,
-    depth_mm INTEGER NOT NULL,
-    base_price REAL NOT NULL,
-    position INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS design_materials (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    description TEXT,
-    price_modifier REAL NOT NULL DEFAULT 1,
-    position INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS design_finishes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    description TEXT,
-    price_modifier REAL NOT NULL DEFAULT 1,
-    position INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS design_print_sides (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    description TEXT,
-    price_modifier REAL NOT NULL DEFAULT 1,
-    position INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS design_production_speeds (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    description TEXT,
-    price_modifier REAL NOT NULL DEFAULT 1,
-    position INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS design_quantities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    price_modifier REAL NOT NULL DEFAULT 1,
-    position INTEGER NOT NULL DEFAULT 0
-  );
+  -- legacy tables kept for backward compatibility are not recreated here
 `);
 
 try {
