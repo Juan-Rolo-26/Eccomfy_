@@ -1,45 +1,18 @@
 import Link from "next/link";
 
-const CTA_LINKS = [
-  { href: "/products", label: "Ver catálogo" },
-  { href: "/contact", label: "Hablar con un especialista" },
-];
-
-const FOOTER_LINK_GROUPS = [
-  {
-    title: "Explorá",
-    links: [
-      { href: "/products", label: "Productos" },
-      { href: "/products", label: "Catálogo completo" },
-      { href: "/admin/content", label: "Panel staff" },
-    ],
-  },
-  {
-    title: "Soporte",
-    links: [
-      { href: "/forgot-password", label: "Recuperar contraseña" },
-      { href: "/verify-email", label: "Verificar cuenta" },
-      { href: "mailto:contacto@eccomfy.com", label: "Escribir a soporte" },
-    ],
-  },
-  {
-    title: "Comunidad",
-    links: [
-      { href: "https://www.linkedin.com", label: "LinkedIn" },
-      { href: "https://www.instagram.com", label: "Instagram" },
-      { href: "https://www.behance.net", label: "Behance" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { href: "/privacy", label: "Política de privacidad" },
-      { href: "/terms", label: "Términos y condiciones" },
-    ],
-  },
-];
-
 export default function Footer() {
+  const navLinks = [
+    { href: "/products", label: "Catálogo" },
+    { href: "/design/mailer", label: "Diseñá online" },
+    { href: "/contact", label: "Contacto" },
+  ];
+
+  const socialLinks = [
+    { href: "https://www.instagram.com", label: "Instagram" },
+    { href: "https://www.behance.net", label: "Behance" },
+    { href: "https://www.linkedin.com", label: "LinkedIn" },
+  ];
+
   const year = new Date().getFullYear();
 
   return (
@@ -73,7 +46,7 @@ export default function Footer() {
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Explorá</p>
                 <ul className="mt-4 space-y-3 text-sm text-white/70">
-                  {NAV_LINKS.map((link) => (
+                  {navLinks.map((link) => (
                     <li key={link.href}>
                       <Link href={link.href} className="transition hover:text-brand-yellow">
                         {link.label}
@@ -86,7 +59,7 @@ export default function Footer() {
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Redes</p>
                 <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/70">
-                  {SOCIAL_LINKS.map((link) => (
+                  {socialLinks.map((link) => (
                     <a
                       key={link.href}
                       href={link.href}
