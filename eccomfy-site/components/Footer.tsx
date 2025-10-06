@@ -51,71 +51,59 @@ export default function Footer() {
       </div>
 
       <div className="container-xl relative py-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <div className="rounded-[2.5rem] border border-white/15 bg-white/10 p-10 shadow-card backdrop-blur">
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">¿Listo para crear?</p>
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
-              Diseñamos experiencias de unboxing memorables
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+          <div className="space-y-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Eccomfy</p>
+            <h2 className="text-4xl font-semibold leading-tight sm:text-5xl">
+              Packaging sostenible para marcas que quieren dejar huella
             </h2>
-            <p className="mt-4 max-w-xl text-sm text-white/75">
-              Explorá materiales responsables, simulaciones 3D y acompañamiento experto para que cada envío sorprenda. Nuestro equipo está listo para ayudarte en cada iteración.
+            <p className="max-w-xl text-base text-white/75">
+              Diseñamos experiencias de unboxing que combinan creatividad, impacto visual y procesos responsables. Sumate y construyamos una identidad que se sienta desde el primer contacto.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {CTA_LINKS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-5 py-2.5 text-sm font-semibold text-brand-navy shadow-lg shadow-brand-navy/20 transition hover:-translate-y-0.5 hover:shadow-xl"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-6 py-3 text-sm font-semibold text-brand-navy shadow-lg shadow-brand-navy/20 transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              Empezar un proyecto
+            </Link>
           </div>
 
-          <div className="grid gap-8 rounded-[2.5rem] border border-white/10 bg-white/5 p-10 backdrop-blur">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Seguinos</p>
-              <p className="mt-2 text-lg font-semibold">Eccomfy</p>
-              <p className="mt-2 text-sm text-white/70">
-                Packaging a medida, tiradas flexibles y resultados premium sin sorpresas.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {FOOTER_LINK_GROUPS.map((group) => (
-                <div key={group.title}>
-                  <p className="text-sm font-semibold text-white/80">{group.title}</p>
-                  <ul className="mt-3 space-y-2 text-sm text-white/60">
-                    {group.links.map((link) => {
-                      const isExternal = link.href.startsWith("http");
-                      const isMailTo = link.href.startsWith("mailto:");
-                      return (
-                        <li key={link.href}>
-                          {isExternal || isMailTo ? (
-                            <a
-                              href={link.href}
-                              className="transition hover:text-brand-yellow"
-                              target={isExternal ? "_blank" : undefined}
-                              rel={isExternal ? "noreferrer" : undefined}
-                            >
-                              {link.label}
-                            </a>
-                          ) : (
-                            <Link href={link.href} className="transition hover:text-brand-yellow">
-                              {link.label}
-                            </Link>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
+          <div className="rounded-[2.5rem] border border-white/10 bg-white/5 p-10 backdrop-blur">
+            <div className="space-y-8">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Explorá</p>
+                <ul className="mt-4 space-y-3 text-sm text-white/70">
+                  {NAV_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <Link href={link.href} className="transition hover:text-brand-yellow">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="h-px w-full bg-white/10" />
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Redes</p>
+                <div className="mt-4 flex flex-wrap gap-3 text-sm text-white/70">
+                  {SOCIAL_LINKS.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      className="rounded-full border border-white/10 bg-white/5 px-4 py-2 transition hover:border-brand-yellow/60 hover:bg-white/10 hover:text-brand-yellow"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-white/50">
-              <span>&copy; {year} Eccomfy</span>
-              <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
-              <span>Hecho en Buenos Aires · Operamos en LATAM</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-white/50">
+                <span>&copy; {year} Eccomfy</span>
+                <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
+                <span>Hecho en Buenos Aires</span>
+              </div>
             </div>
           </div>
         </div>
