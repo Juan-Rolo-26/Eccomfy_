@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const CTA_LINKS = [
-  { href: "/design/mailer", label: "Abrir configurador" },
+  { href: "/products", label: "Ver catálogo" },
   { href: "/contact", label: "Hablar con un especialista" },
 ];
 
@@ -10,7 +10,7 @@ const FOOTER_LINK_GROUPS = [
     title: "Explorá",
     links: [
       { href: "/products", label: "Productos" },
-      { href: "/design/mailer", label: "Demostración 3D" },
+      { href: "/products", label: "Catálogo completo" },
       { href: "/admin/content", label: "Panel staff" },
     ],
   },
@@ -28,6 +28,13 @@ const FOOTER_LINK_GROUPS = [
       { href: "https://www.linkedin.com", label: "LinkedIn" },
       { href: "https://www.instagram.com", label: "Instagram" },
       { href: "https://www.behance.net", label: "Behance" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Política de privacidad" },
+      { href: "/terms", label: "Términos y condiciones" },
     ],
   },
 ];

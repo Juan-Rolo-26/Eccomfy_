@@ -1,17 +1,15 @@
 import StyleCard from "../../components/StyleCard";
 import { getProductStyles } from "@/lib/content";
 
-export default async function Products() {
-  const productStyles = await getProductStyles();
+export default function Products() {
+  const styles = getProductStyles();
 
   return (
     <div className="container-xl py-12">
       <h1 className="text-3xl font-bold mb-8">Productos</h1>
-      {productStyles.length === 0 ? (
-        <p className="text-white/70">Todavía no hay productos cargados.</p>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {productStyles.map((style) => (
+      {styles.length > 0 ? (
+        <div className="grid gap-6 md:grid-cols-3">
+          {styles.map((style) => (
             <StyleCard
               key={style.id}
               title={style.title}
@@ -21,6 +19,8 @@ export default async function Products() {
             />
           ))}
         </div>
+      ) : (
+        <p className="text-brand-navy/70">Aún no hay productos en el catálogo.</p>
       )}
     </div>
   );

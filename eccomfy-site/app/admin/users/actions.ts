@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireStaff } from "@/lib/auth";
-import { deleteUserById, getStaffCount, getUserById, setUserStaff } from "@/lib/users";
+import { deleteUserById, getStaffCount, getUserById, setUserStaff, markUserEmailVerified } from "@/lib/users";
 
 export type ManageUserState = {
   error?: string;
@@ -90,4 +90,31 @@ export async function deleteUserAction(
   return {
     success: "Usuario eliminado correctamente.",
   };
+}
+
+export async function verifyEmailAction(
+  _prevState: ManageUserState,
+  formData: FormData,
+): Promise<ManageUserState> {
+  await requireStaff();
+
+  const id = parseId(formData.get("id"));
+  if (!id) {
+    return { error: INITIAL_ERROR };
+  }
+
+  const user = getUserById(id);
+  if (!user) {
+    return { error: "El usuario no existe." };
+  }
+
+  if (user.email_verified) {
+    return { success: "El email ya estaba verificado." };
+  }
+
+  markUserEmailVerified(id);
+  revalidatePath("/admin/users");
+  revalidatePath("/account");
+
+  return { success: "Email verificado manualmente." };
 }
