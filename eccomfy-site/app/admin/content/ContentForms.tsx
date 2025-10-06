@@ -58,18 +58,18 @@ export function ProductStyleForm() {
           <input
             name="title"
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="Mailer"
+            placeholder="Caja para botellas"
             required
           />
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          URL destino
+          Identificador (slug)
           <input
-            name="href"
+            name="slug"
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="/design/mailer"
-            required
+            placeholder="caja-botella"
           />
+          <p className="mt-1 text-[11px] text-white/50">Se usa para la URL: /design/&lt;slug&gt;. Se completa automáticamente si lo dejás vacío.</p>
         </label>
       </div>
       <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
@@ -87,7 +87,7 @@ export function ProductStyleForm() {
           <input
             name="image"
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="/box-mailer.svg"
+            placeholder="/productos/caja-botella.png"
             required
           />
         </label>
@@ -103,6 +103,122 @@ export function ProductStyleForm() {
           />
         </label>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Medidas disponibles
+          <textarea
+            name="sizes"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Pequeña|120|80|40|1.85\nGrande|200|120|50|2.5"}
+            required
+          />
+          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Ancho|Alto|Profundidad|Precio base (mm y USD).</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Materiales
+          <textarea
+            name="materials"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Cartulina premium|Ideal para retail|1\nKraft reciclado|Textura natural|1.1"}
+            required
+          />
+          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Descripción opcional|Multiplicador de precio.</p>
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Acabados
+          <textarea
+            name="finishes"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Mate soft touch||1\nBarniz UV|Resalta logos|1.2"}
+            required
+          />
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Caras impresas
+          <textarea
+            name="printSides"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Exterior|Ideal para branding|1\nExterior e interior|Máximo impacto|1.35"}
+            required
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Velocidades de producción
+          <textarea
+            name="productionSpeeds"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Estándar|13-18 días hábiles|1\nRápida|7-9 días hábiles|1.3"}
+            required
+          />
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Cantidades disponibles
+          <textarea
+            name="quantities"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Caja de 100|100|1\nCaja de 500|500|0.85"}
+            required
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Colores disponibles
+          <textarea
+            name="colors"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Blanco|#FFFFFF|1\nNegro|#111111|1.05"}
+          />
+          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Hex opcional|Multiplicador.</p>
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            Pedido mínimo sugerido
+            <input
+              name="minQuantity"
+              type="number"
+              min={0}
+              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+              placeholder="100"
+            />
+          </label>
+          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            Pedido máximo sugerido
+            <input
+              name="maxQuantity"
+              type="number"
+              min={0}
+              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+              placeholder="5000"
+            />
+          </label>
+        </div>
+      </div>
+
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+        Highlights (separá cada punto en una línea)
+        <textarea
+          name="highlights"
+          rows={3}
+          className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+          placeholder={"Se entrega plegada\nIncluye solapas reforzadas"}
+        />
+      </label>
       <FormMessage state={state} />
     </form>
   );
