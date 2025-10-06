@@ -8,6 +8,7 @@ import {
   getMetrics,
   getTestimonials,
   getBrands,
+  summarizeProductStyle,
 } from "@/lib/content";
 
 type IconName = "sparkles" | "layers" | "support" | "leaf" | "grid" | "puzzle" | "check";
@@ -259,15 +260,20 @@ export default async function Home() {
             </Link>
           </div>
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {productStyles.map((style) => (
-              <StyleCard
-                key={style.id}
-                title={style.title}
-                desc={style.description}
-                href={style.href}
-                img={style.image}
-              />
-            ))}
+            {productStyles.map((style) => {
+              const summary = summarizeProductStyle(style);
+              return (
+                <StyleCard
+                  key={style.id}
+                  title={style.title}
+                  desc={style.description}
+                  href={style.href}
+                  img={style.image}
+                  badges={summary.badges}
+                  highlights={summary.highlights}
+                />
+              );
+            })}
           </div>
         </section>
       )}

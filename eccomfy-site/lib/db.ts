@@ -55,10 +55,12 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS product_styles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     href TEXT NOT NULL,
     image TEXT NOT NULL,
+    config TEXT NOT NULL,
     position INTEGER NOT NULL DEFAULT 0
   );
 
@@ -167,6 +169,59 @@ try {
     throw error;
   }
 }
+
+try {
+  db.prepare("ALTER TABLE product_styles ADD COLUMN slug TEXT").run();
+} catch (error) {
+  if (
+    !(
+      error instanceof Error &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("duplicate column name")
+    )
+  ) {
+    throw error;
+  }
+}
+
+try {
+  db.prepare("ALTER TABLE product_styles ADD COLUMN config TEXT").run();
+  db.prepare("UPDATE product_styles SET config = '{}' WHERE config IS NULL OR trim(config) = ''").run();
+} catch (error) {
+  if (
+    !(
+      error instanceof Error &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("duplicate column name")
+    )
+  ) {
+    throw error;
+  }
+}
+
+try {
+  db.exec(
+    "CREATE UNIQUE INDEX IF NOT EXISTS product_styles_slug_unique ON product_styles(slug) WHERE slug IS NOT NULL AND slug != ''",
+  );
+} catch (error) {
+  if (
+    !(
+      error instanceof Error &&
+      "message" in error &&
+      typeof error.message === "string" &&
+      error.message.includes("already exists")
+    )
+  ) {
+    throw error;
+  }
+}
+
+db.prepare(
+  "UPDATE product_styles SET slug = CASE WHEN slug IS NULL OR trim(slug) = '' THEN lower(replace(title, ' ', '-')) ELSE slug END",
+).run();
+db.prepare("UPDATE product_styles SET config = '{}' WHERE config IS NULL OR trim(config) = ''").run();
 
 export type DbUser = {
   id: number;
