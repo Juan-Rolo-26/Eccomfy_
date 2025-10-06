@@ -234,7 +234,7 @@ export function getProducts(): Product[] {
     )
     .all();
 
-  return rows.map((row) => mapProductRow(row));
+  return rows.map((row: ProductRow) => mapProductRow(row));
 }
 
 export function getProductBySlug(slug: string): Product | null {
@@ -257,7 +257,7 @@ export function getMetrics(): Metric[] {
       "SELECT id, value, label FROM metrics ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, value, label }) => ({ id, value, label }));
+  return rows.map(({ id, value, label }: Metric & { position: number }) => ({ id, value, label }));
 }
 
 export function getTestimonials(): Testimonial[] {
@@ -266,7 +266,7 @@ export function getTestimonials(): Testimonial[] {
       "SELECT id, quote, name, role, highlight FROM testimonials ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, quote, name, role, highlight }) => ({
+  return rows.map(({ id, quote, name, role, highlight }: Testimonial & { position: number }) => ({
     id,
     quote,
     name,
@@ -281,5 +281,5 @@ export function getBrands(): Brand[] {
       "SELECT id, name FROM brands ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, name }) => ({ id, name }));
+  return rows.map(({ id, name }: Brand & { position: number }) => ({ id, name }));
 }

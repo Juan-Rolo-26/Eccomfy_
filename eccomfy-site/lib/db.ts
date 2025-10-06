@@ -93,6 +93,245 @@ db.exec(`
   -- legacy tables kept for backward compatibility are not recreated here
 `);
 
+type LegacyProductStyleRow = {
+  id: number;
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  position: number | null;
+};
+
+type LegacySizeRow = {
+  id: number;
+  label: string;
+  width_mm: number;
+  height_mm: number;
+  depth_mm: number;
+  base_price: number;
+  position: number | null;
+};
+
+type LegacyChoiceRow = {
+  id: number;
+  label: string;
+  description: string | null;
+  price_modifier: number | null;
+  position: number | null;
+};
+
+type LegacyQuantityRow = {
+  id: number;
+  label: string;
+  quantity: number | null;
+  price_modifier: number | null;
+  position: number | null;
+};
+
+function normalizeNumber(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    return parsed;
+  }
+  return fallback;
+}
+
+function normalizeInteger(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  if (Number.isInteger(parsed)) {
+    return parsed;
+  }
+  return fallback;
+}
+
+function slugify(value: string): string {
+  const normalized = value
+    .normalize("NFD")
+    .replace(/[^A-Za-z0-9\s-]/g, "")
+    .replace(/[\u0300-\u036f]/g, "");
+  return normalized
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function extractSlugCandidate(href: string): string {
+  const cleaned = href.trim();
+  if (!cleaned) return "";
+  const parts = cleaned.split("/").filter(Boolean);
+  const last = parts.pop();
+  return last ? slugify(last) : slugify(cleaned);
+}
+
+function ensureUniqueSlug(base: string, used: Set<string>, fallbackId: number): string {
+  const baseSlug = base || `producto-${fallbackId}`;
+  let candidate = baseSlug;
+  let attempt = 2;
+  while (used.has(candidate)) {
+    candidate = `${baseSlug}-${attempt}`;
+    attempt += 1;
+  }
+  used.add(candidate);
+  return candidate;
+}
+
+function tableNames(): Set<string> {
+  const rows = db
+    .prepare<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table'")
+    .all();
+  return new Set(rows.map((row) => row.name));
+}
+
+function migrateLegacyProductData() {
+  try {
+    const productCountRow = db.prepare<{ count: number }>("SELECT COUNT(*) as count FROM products").get();
+    if (productCountRow && productCountRow.count > 0) {
+      return;
+    }
+
+    const tables = tableNames();
+    if (!tables.has("product_styles")) {
+      return;
+    }
+
+    const legacyProducts = db
+      .prepare<LegacyProductStyleRow>(
+        "SELECT id, title, description, href, image, position FROM product_styles ORDER BY position ASC",
+      )
+      .all();
+
+    if (legacyProducts.length === 0) {
+      return;
+    }
+
+    const legacySizes: LegacySizeRow[] = tables.has("design_sizes")
+      ? db
+          .prepare<LegacySizeRow>(
+            "SELECT id, label, width_mm, height_mm, depth_mm, base_price, position FROM design_sizes ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const legacyMaterials: LegacyChoiceRow[] = tables.has("design_materials")
+      ? db
+          .prepare<LegacyChoiceRow>(
+            "SELECT id, label, description, price_modifier, position FROM design_materials ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const legacyFinishes: LegacyChoiceRow[] = tables.has("design_finishes")
+      ? db
+          .prepare<LegacyChoiceRow>(
+            "SELECT id, label, description, price_modifier, position FROM design_finishes ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const legacyPrintSides: LegacyChoiceRow[] = tables.has("design_print_sides")
+      ? db
+          .prepare<LegacyChoiceRow>(
+            "SELECT id, label, description, price_modifier, position FROM design_print_sides ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const legacyProductionSpeeds: LegacyChoiceRow[] = tables.has("design_production_speeds")
+      ? db
+          .prepare<LegacyChoiceRow>(
+            "SELECT id, label, description, price_modifier, position FROM design_production_speeds ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const legacyQuantities: LegacyQuantityRow[] = tables.has("design_quantities")
+      ? db
+          .prepare<LegacyQuantityRow>(
+            "SELECT id, label, quantity, price_modifier, position FROM design_quantities ORDER BY position ASC",
+          )
+          .all()
+      : [];
+
+    const serializedSizes = JSON.stringify(
+      legacySizes.map((item, index) => ({
+        id: String(item.id ?? index + 1),
+        label: item.label,
+        width_mm: normalizeNumber(item.width_mm, 0),
+        height_mm: normalizeNumber(item.height_mm, 0),
+        depth_mm: normalizeNumber(item.depth_mm, 0),
+        base_price: normalizeNumber(item.base_price, 0),
+        position: normalizeInteger(item.position, index),
+      })),
+    );
+
+    const serializeChoices = (items: LegacyChoiceRow[]) =>
+      JSON.stringify(
+        items.map((item, index) => ({
+          id: String(item.id ?? index + 1),
+          label: item.label,
+          description: item.description ? item.description : null,
+          price_modifier: normalizeNumber(item.price_modifier, 1),
+          position: normalizeInteger(item.position, index),
+        })),
+      );
+
+    const serializedMaterials = serializeChoices(legacyMaterials);
+    const serializedFinishes = serializeChoices(legacyFinishes);
+    const serializedPrintSides = serializeChoices(legacyPrintSides);
+    const serializedProductionSpeeds = serializeChoices(legacyProductionSpeeds);
+
+    const serializedQuantities = JSON.stringify(
+      legacyQuantities.map((item, index) => ({
+        id: String(item.id ?? index + 1),
+        label: item.label,
+        quantity: Math.max(0, Math.floor(normalizeNumber(item.quantity, 0))),
+        price_modifier: normalizeNumber(item.price_modifier, 1),
+        position: normalizeInteger(item.position, index),
+      })),
+    );
+
+    const usedSlugs = new Set<string>();
+    const insertProduct = db.prepare(
+      `INSERT INTO products (title, slug, description, image, position, sizes_json, materials_json, finishes_json, print_sides_json, production_speeds_json, quantities_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+
+    const migrate = db.transaction((rows: LegacyProductStyleRow[]) => {
+      rows.forEach((row, index) => {
+        const title = row.title?.trim() ?? "";
+        const description = row.description?.trim() ?? "";
+        const image = row.image?.trim() ?? "";
+        const slugCandidate = extractSlugCandidate(row.href ?? "");
+        const fallbackSlug = slugify(title) || slugify(`producto-${row.id}`);
+        const slug = ensureUniqueSlug(slugCandidate || fallbackSlug, usedSlugs, row.id ?? index + 1);
+        const position = normalizeInteger(row.position, index);
+
+        insertProduct.run(
+          title,
+          slug,
+          description,
+          image,
+          position,
+          serializedSizes,
+          serializedMaterials,
+          serializedFinishes,
+          serializedPrintSides,
+          serializedProductionSpeeds,
+          serializedQuantities,
+        );
+      });
+    });
+
+    migrate(legacyProducts);
+  } catch (error) {
+    console.error("migrateLegacyProductData", error);
+  }
+}
+
+migrateLegacyProductData();
+
 try {
   db.prepare("ALTER TABLE users ADD COLUMN is_staff INTEGER NOT NULL DEFAULT 0").run();
 } catch (error) {
