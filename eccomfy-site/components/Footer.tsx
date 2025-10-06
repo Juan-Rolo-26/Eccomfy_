@@ -1,15 +1,42 @@
 import Link from "next/link";
 
-const NAV_LINKS = [
-  { href: "/products", label: "Catálogo" },
-  { href: "/design/mailer", label: "Diseñá online" },
-  { href: "/contact", label: "Contacto" },
+const CTA_LINKS = [
+  { href: "/products", label: "Ver catálogo" },
+  { href: "/contact", label: "Hablar con un especialista" },
 ];
 
-const SOCIAL_LINKS = [
-  { href: "https://www.instagram.com", label: "Instagram" },
-  { href: "https://www.behance.net", label: "Behance" },
-  { href: "https://www.linkedin.com", label: "LinkedIn" },
+const FOOTER_LINK_GROUPS = [
+  {
+    title: "Explorá",
+    links: [
+      { href: "/products", label: "Productos" },
+      { href: "/products", label: "Catálogo completo" },
+      { href: "/admin/content", label: "Panel staff" },
+    ],
+  },
+  {
+    title: "Soporte",
+    links: [
+      { href: "/forgot-password", label: "Recuperar contraseña" },
+      { href: "/verify-email", label: "Verificar cuenta" },
+      { href: "mailto:contacto@eccomfy.com", label: "Escribir a soporte" },
+    ],
+  },
+  {
+    title: "Comunidad",
+    links: [
+      { href: "https://www.linkedin.com", label: "LinkedIn" },
+      { href: "https://www.instagram.com", label: "Instagram" },
+      { href: "https://www.behance.net", label: "Behance" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Política de privacidad" },
+      { href: "/terms", label: "Términos y condiciones" },
+    ],
+  },
 ];
 
 export default function Footer() {

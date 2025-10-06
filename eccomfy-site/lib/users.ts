@@ -66,3 +66,7 @@ export function getStaffCount(): number {
 export function deleteUserById(id: number): void {
   db.prepare("DELETE FROM users WHERE id = ?").run(id);
 }
+
+export function markUserEmailVerified(id: number): void {
+  db.prepare("UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+}

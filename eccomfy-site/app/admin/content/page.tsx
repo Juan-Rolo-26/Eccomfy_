@@ -64,7 +64,8 @@ export default async function ContentAdminPage() {
             items={productStyles.map((item) => ({
               id: item.id,
               primary: item.title,
-              secondary: `${item.description} — ${item.href}`,
+              secondary: `${item.description} · slug: ${item.slug} · ${item.configuration.sizes.length} medidas · ${item.configuration.materials.length} materiales`,
+              href: item.href,
             }))}
             emptyLabel="Todavía no hay productos."
             deleteAction={deleteProductStyleAction}
@@ -111,6 +112,7 @@ type ContentListProps = {
     id: number;
     primary: string;
     secondary?: string;
+    href?: string;
   }>;
   deleteAction?: (formData: FormData) => Promise<void>;
 };
@@ -131,6 +133,17 @@ function ContentList({ title, emptyLabel, items, deleteAction }: ContentListProp
               <div>
                 <p className="font-semibold text-white">{item.primary}</p>
                 {item.secondary ? <p className="text-xs text-white/70">{item.secondary}</p> : null}
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand-yellow transition hover:text-brand-yellow/80"
+                  >
+                    Ver en catálogo
+                    <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden className="fill-current">
+                      <path d="M13.172 12l-4.95 4.95 1.414 1.414L16 12 9.636 5.636 8.222 7.05z" />
+                    </svg>
+                  </Link>
+                ) : null}
               </div>
               {deleteAction ? (
                 <form action={deleteAction}>

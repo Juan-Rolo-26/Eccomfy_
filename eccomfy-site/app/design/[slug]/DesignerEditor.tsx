@@ -5,6 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 
 import type { DesignOptions, DesignSize, DesignMaterial, DesignQuantity } from "@/lib/designOptions";
+import type { ProductStyle, ProductConfigurationColor } from "@/lib/content";
 
 const TOOL_ITEMS = [
   { emoji: "⚙️", label: "Configurar & precio" },
@@ -24,7 +25,8 @@ function priceSummary(
   finish: DesignMaterial,
   printSide: DesignMaterial,
   speed: DesignMaterial,
-  priceModifier: number,
+  quantityModifier: number,
+  colorModifier: number,
   orderQuantity: number,
 ) {
   const base = size.base_price;
@@ -33,19 +35,73 @@ function priceSummary(
     finish.price_modifier *
     printSide.price_modifier *
     speed.price_modifier *
-    priceModifier;
+    quantityModifier *
+    colorModifier;
   const unit = Number((base * modifier).toFixed(2));
   const subtotal = Number((unit * orderQuantity).toFixed(2));
   return { unit, subtotal };
 }
 
-type Props = {
-  style: string;
-  options: DesignOptions;
-  canManageOptions: boolean;
+type EditorOptions = DesignOptions & {
+  colors: Array<ProductConfigurationColor & { id: number; position: number }>;
 };
 
-export default function DesignerEditor({ style, options, canManageOptions }: Props) {
+type Props = {
+  product: ProductStyle;
+};
+
+function buildEditorOptions(product: ProductStyle): EditorOptions {
+  const { configuration } = product;
+
+  const sizes: DesignSize[] = configuration.sizes.map((size, index) => ({
+    id: index + 1,
+    label: size.label,
+    width_mm: size.width_mm,
+    height_mm: size.height_mm,
+    depth_mm: size.depth_mm,
+    base_price: size.base_price,
+    position: index,
+  }));
+
+  const mapMaterials = (items: typeof configuration.materials): DesignMaterial[] =>
+    items.map((item, index) => ({
+      id: index + 1,
+      label: item.label,
+      description: item.description ?? null,
+      price_modifier: item.price_modifier,
+      position: index,
+    }));
+
+  const mapGeneric = mapMaterials;
+
+  const quantities: DesignQuantity[] = configuration.quantities.map((quantity, index) => ({
+    id: index + 1,
+    label: quantity.label,
+    quantity: quantity.quantity,
+    price_modifier: quantity.price_modifier,
+    position: index,
+  }));
+
+  const colors = configuration.colors.map((color, index) => ({
+    ...color,
+    id: index + 1,
+    position: index,
+  }));
+
+  return {
+    sizes,
+    materials: mapMaterials(configuration.materials),
+    finishes: mapGeneric(configuration.finishes),
+    printSides: mapGeneric(configuration.printSides),
+    productionSpeeds: mapGeneric(configuration.productionSpeeds),
+    quantities,
+    colors,
+  };
+}
+
+export default function DesignerEditor({ product }: Props) {
+  const options = useMemo(() => buildEditorOptions(product), [product]);
+
   const hasAllOptions =
     options.sizes.length > 0 &&
     options.materials.length > 0 &&
@@ -60,23 +116,14 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
         <div className="rounded-[2.5rem] border border-white/15 bg-white/5 p-10 text-white">
           <h1 className="text-3xl font-semibold">Faltan opciones de diseño</h1>
           <p className="mt-3 text-white/70">
-            Aún no hay medidas ni parámetros configurados. Contactá a tu equipo de Eccomfy para cargarlos y habilitar el editor.
+            Aún no hay medidas ni parámetros configurados para este producto. Contactá a tu equipo de Eccomfy para cargarlos y habilitar el editor.
           </p>
-          {canManageOptions ? (
-            <Link
-              href="/admin/design-options"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-brand-yellow px-6 py-3 text-sm font-semibold text-brand-navy transition hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              Ir al panel de opciones
-            </Link>
-          ) : (
-            <Link
-              href="/contact"
-              className="mt-6 inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Contactar soporte
-            </Link>
-          )}
+          <Link
+            href="/contact"
+            className="mt-6 inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Contactar soporte
+          </Link>
         </div>
       </div>
     );
@@ -88,6 +135,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
   const [printId, setPrintId] = useState(options.printSides[0]?.id ?? 0);
   const [speedId, setSpeedId] = useState(options.productionSpeeds[0]?.id ?? 0);
   const [quantityId, setQuantityId] = useState(options.quantities[0]?.id ?? 0);
+  const [colorId, setColorId] = useState(options.colors[0]?.id ?? 0);
   const [orderQuantity, setOrderQuantity] = useState(() => {
     const firstStock = options.quantities[0]?.quantity ?? 0;
     if (firstStock <= 0) return 0;
@@ -108,8 +156,9 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
     const printSide = options.printSides.find((item) => item.id === printId) ?? options.printSides[0];
     const speed = options.productionSpeeds.find((item) => item.id === speedId) ?? options.productionSpeeds[0];
     const quantity = options.quantities.find((item) => item.id === quantityId) ?? options.quantities[0];
-    return { size, material, finish, printSide, speed, quantity };
-  }, [sizeId, materialId, finishId, printId, speedId, quantityId, options]);
+    const color = options.colors.find((item) => item.id === colorId) ?? options.colors[0] ?? null;
+    return { size, material, finish, printSide, speed, quantity, color };
+  }, [sizeId, materialId, finishId, printId, speedId, quantityId, colorId, options]);
 
   const { unit, subtotal } = useMemo(
     () =>
@@ -120,6 +169,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
         selected.printSide,
         selected.speed,
         selected.quantity?.price_modifier ?? 1,
+        selected.color?.price_modifier ?? 1,
         orderQuantity,
       ),
     [selected, orderQuantity],
@@ -219,6 +269,17 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
     setFeedback(customMessage ?? `Zoom ajustado a ${normalized}%.`);
   }
 
+  useEffect(() => {
+    if (options.colors.length === 0) {
+      setColorId(0);
+      return;
+    }
+    const exists = options.colors.some((item) => item.id === colorId);
+    if (!exists) {
+      setColorId(options.colors[0]?.id ?? 0);
+    }
+  }, [colorId, options.colors]);
+
   return (
     <div className="min-h-screen bg-[#f5f6ff] text-brand-navy">
       <header className="sticky top-0 z-30 flex flex-wrap items-center gap-4 border-b border-[#dfe3fc] bg-white px-6 py-3 shadow-sm">
@@ -228,7 +289,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-brand-blue">Editor Eccomfy</p>
-            <p className="text-sm font-semibold">Proyecto sin título</p>
+            <p className="text-sm font-semibold">{product.title}</p>
           </div>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-3 text-sm">
@@ -310,7 +371,7 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                   <div className="flex-1">
                     <div className="relative h-[440px] w-full">
                       <BoxPreview
-                        style={style}
+                        style={product.slug}
                         viewMode={viewMode}
                         rotation={rotation}
                         zoom={zoom}
@@ -405,6 +466,11 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                       <p>
                         <span className="font-semibold text-brand-navy">Stock:</span> {selected.quantity?.quantity ?? 0} u.
                       </p>
+                      {selected.color ? (
+                        <p>
+                          <span className="font-semibold text-brand-navy">Color base:</span> {selected.color.label}
+                        </p>
+                      ) : null}
                       <p>
                         <span className="font-semibold text-brand-navy">Pedido:</span> {orderQuantity} u.
                       </p>
@@ -469,6 +535,36 @@ export default function DesignerEditor({ style, options, canManageOptions }: Pro
                     <p className="mt-1 text-xs text-brand-blue/70">{selected.material.description}</p>
                   ) : null}
                 </div>
+
+                {options.colors.length > 0 ? (
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Color base</label>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {options.colors.map((color) => {
+                        const isActive = color.id === colorId;
+                        return (
+                          <button
+                            key={color.id}
+                            type="button"
+                            onClick={() => setColorId(color.id)}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition ${
+                              isActive
+                                ? "border-brand-blue bg-brand-blue/10 text-brand-navy"
+                                : "border-[#dfe3fc] bg-white text-brand-blue hover:bg-brand-blue/10"
+                            }`}
+                          >
+                            <span
+                              className="h-4 w-4 rounded-full border border-black/10"
+                              style={{ backgroundColor: color.hex ?? "#f8fafc" }}
+                              aria-hidden
+                            />
+                            {color.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-[0.3em] text-brand-blue">Acabado</label>
