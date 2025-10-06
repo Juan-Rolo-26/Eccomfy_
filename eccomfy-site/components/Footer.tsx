@@ -13,6 +13,11 @@ export default function Footer() {
     { href: "https://www.linkedin.com", label: "LinkedIn" },
   ];
 
+  const legalLinks = [
+    { href: "/terms", label: "Términos y condiciones" },
+    { href: "/privacy", label: "Política de privacidad" },
+  ];
+
   const year = new Date().getFullYear();
 
   return (
@@ -76,6 +81,14 @@ export default function Footer() {
                 <span>&copy; {year} Eccomfy</span>
                 <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
                 <span>Hecho en Buenos Aires</span>
+                {legalLinks.map((link) => (
+                  <span key={link.href} className="flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
+                    <Link href={link.href} className="transition hover:text-brand-yellow">
+                      {link.label}
+                    </Link>
+                  </span>
+                ))}
               </div>
             </div>
           </div>

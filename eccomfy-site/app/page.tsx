@@ -204,6 +204,32 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="container-xl mt-24">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+          <div className="space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Aprendé con nosotros</p>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">¿Cómo funciona la serigrafía?</h2>
+            <p className="text-sm text-white/70 sm:text-base">
+              Mirá el paso a paso del proceso de serigrafía para entender cómo logramos impresiones nítidas sobre cada pieza.
+              Compartimos consejos sobre tintas, tiempos de secado y controles de calidad para que puedas planificar mejor tus
+              proyectos.
+            </p>
+          </div>
+          <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/60 shadow-card">
+            <div className="aspect-video">
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube.com/embed/0iX1xZ9K0wU"
+                title="Proceso de serigrafía"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <div className="pointer-events-none absolute inset-0 border border-white/10" aria-hidden />
+          </div>
+        </div>
+      </section>
+
       {metrics.length > 0 && (
         <section className="container-xl mt-16">
           <div className="grid gap-6 sm:grid-cols-3">
