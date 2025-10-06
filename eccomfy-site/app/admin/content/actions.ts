@@ -22,6 +22,7 @@ function parsePosition(input: FormDataEntryValue | null): number | null {
 
 function revalidateContentPaths() {
   revalidatePath("/");
+  revalidatePath("/products");
   revalidatePath("/admin/content");
 }
 
