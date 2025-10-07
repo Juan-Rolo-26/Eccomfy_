@@ -52,3 +52,39 @@ npm run build     # Compila la app en modo producción
 3. **Olvido de contraseña:** `/forgot-password` envía un enlace válido por 60 minutos. Al usarlo se cierran las sesiones anteriores.
 
 Todo el contenido dinámico (productos destacados, testimonios, métricas, opciones del editor) vive en `data/eccomfy.db` y se administra desde `/admin/*` con un usuario marcado como staff.
+
+## ¿Qué hacer cuando aparecen conflictos de merge?
+
+Si al actualizar tu rama GitHub muestra un mensaje como el de la captura (lista de archivos con el botón **Resolve conflicts**), significa que los cambios de tu rama chocan con los que ya existen en `main` u otra rama base. Para destrabarlos seguí estos pasos:
+
+1. **Actualizá tu rama local.**
+   ```bash
+   git fetch origin
+   git checkout tu-rama
+   git merge origin/main   # o la rama base que corresponda
+   ```
+   Git marcará los archivos en conflicto y dejará el estado `MERGING`.
+
+2. **Abrí los archivos en conflicto.** Dentro de cada archivo vas a ver bloques con marcadores:
+   ```
+   <<<<<<< HEAD
+   tu versión
+   =======
+   versión de la rama base
+   >>>>>>> origin/main
+   ```
+   Conservá o combiná las líneas que correspondan y borrá los marcadores (`<<<<<<<`, `=======`, `>>>>>>>`).
+
+3. **Probá y marcá los archivos como resueltos.**
+   ```bash
+   npm run lint     # o los comandos de verificación que uses
+   git add archivo/en/conflicto.tsx
+   ```
+
+4. **Finalizá el merge y subilo.**
+   ```bash
+   git commit
+   git push origin tu-rama
+   ```
+
+Después de esto el botón de GitHub pasará a **Mark as resolved** y podrás continuar con el Pull Request.
