@@ -400,17 +400,21 @@ export default async function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Aprendé con nosotros</p>
             <h2 className="text-3xl font-semibold text-white sm:text-4xl">¿Cómo funciona la serigrafía?</h2>
             <p className="text-sm text-white/70 sm:text-base">
-              Mirá el paso a paso del proceso de serigrafía para entender cómo logramos impresiones nítidas sobre cada pieza.
-              Compartimos consejos sobre tintas, tiempos de secado y controles de calidad para que puedas planificar mejor tus
-              proyectos.
+              {SCREEN_PRINTING_VIDEO.description} Además, compartimos consejos sobre tintas, tiempos de secado y controles de
+              calidad para que puedas planificar mejor tus proyectos.
+            </p>
+            <p className="text-xs text-white/50">
+              Fuente: video "{SCREEN_PRINTING_VIDEO.title}" publicado por Catspit Productions en YouTube.
             </p>
           </div>
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-black/60 shadow-card">
             <div className="aspect-video">
               <iframe
                 className="h-full w-full"
-                src="https://www.youtube.com/embed/0iX1xZ9K0wU"
-                title="Proceso de serigrafía"
+                src={SCREEN_PRINTING_VIDEO.url}
+                title={SCREEN_PRINTING_VIDEO.title}
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
