@@ -79,6 +79,12 @@ export default async function AccountPage() {
                 >
                   Crear producto
                 </Link>
+                <Link
+                  href="/design"
+                  className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  Ir al configurador 3D
+                </Link>
               </div>
             </div>
           ) : (
@@ -138,6 +144,11 @@ export default async function AccountPage() {
                 <li>
                   <Link href="/admin/users" className="font-semibold text-brand-yellow hover:underline">
                     Gestionar permisos de usuarios
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/design" className="font-semibold text-brand-yellow hover:underline">
+                    Probar el configurador como cliente
                   </Link>
                 </li>
                 <li>

@@ -214,13 +214,6 @@ const SENSORY_MOMENTS = [
   },
 ];
 
-const SCREEN_PRINTING_VIDEO = {
-  url: "https://www.youtube.com/embed/bqSE0sjjXNc",
-  title: "Serigrafía paso a paso",
-  description:
-    "Explorá cada etapa del proceso tradicional de serigrafía y mirá cómo se prepara la malla, se alinea el arte y se cura la tinta.",
-};
-
 function Icon({ name }: { name: IconName }) {
   return ICONS[name];
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import StyleCard from "@/components/StyleCard";
@@ -13,12 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function DesignCatalogPage() {
-  const user = await getCurrentUser();
-  if (user?.is_staff) {
-    redirect("/admin/content");
-  }
-
   const productStyles = getProductStyles();
+  const user = await getCurrentUser();
+  const isStaff = Boolean(user?.is_staff);
 
   return (
     <div className="container-xl space-y-12 py-12 md:space-y-16 md:py-16">
@@ -41,16 +37,27 @@ export default async function DesignCatalogPage() {
             Todavía no hay productos disponibles en el catálogo.
           </p>
           <p className="mt-3 max-w-2xl">
-            Estamos preparando nuevos modelos para que puedas diseñar packaging en minutos. Dejanos tus datos y te avisamos
-            cuando estén online.
+            Estamos preparando nuevos modelos para que puedas diseñar packaging en minutos.
+            {isStaff
+              ? " Ingresá al panel de administración para cargar el primero."
+              : " Dejanos tus datos y te avisamos cuando estén online."}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Contactanos
-            </Link>
+            {isStaff ? (
+              <Link
+                href="/admin/products"
+                className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-5 py-2 text-sm font-semibold text-brand-navy shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+              >
+                Cargar producto desde el admin
+              </Link>
+            ) : (
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Contactanos
+              </Link>
+            )}
           </div>
         </div>
       ) : (
