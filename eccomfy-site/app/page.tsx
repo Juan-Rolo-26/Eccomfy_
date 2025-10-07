@@ -10,6 +10,7 @@ import {
   getBrands,
   summarizeProductStyle,
 } from "@/lib/content";
+import { SCREEN_PRINTING_VIDEO } from "@/lib/learning";
 
 type IconName =
   | "sparkles"
