@@ -28,7 +28,7 @@ export default function Header({ user }: HeaderProps) {
   const navLinks = user?.is_staff
     ? [
         { href: "/products", label: "Productos" },
-        { href: "/design/mailer", label: "Diseñar" },
+        { href: "/design", label: "Diseñar" },
         { href: "/admin/design-options", label: "Opciones" },
         { href: "/admin/users", label: "Usuarios" },
         { href: "/admin/content", label: "Contenido" },
@@ -36,7 +36,7 @@ export default function Header({ user }: HeaderProps) {
       ]
     : [
         { href: "/products", label: "Productos" },
-        { href: "/design/mailer", label: "Diseñar" },
+        { href: "/design", label: "Diseñar" },
         {
           href: user ? "/account" : "/login",
           label: user ? "Mi cuenta" : "Ingresar",
@@ -55,7 +55,7 @@ export default function Header({ user }: HeaderProps) {
           ))}
         </nav>
         <Link
-          href={user ? (user.is_staff ? "/admin/design-options" : "/design/mailer") : "/register"}
+          href={user ? (user.is_staff ? "/admin/design-options" : "/design") : "/register"}
           className="inline-flex items-center justify-center rounded-lg bg-brand-yellow text-brand-navy px-4 py-2 font-semibold hover:opacity-95"
         >
           {user ? (user.is_staff ? "Panel admin" : "Nuevo diseño") : "Crear cuenta"}
