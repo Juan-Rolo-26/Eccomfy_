@@ -74,10 +74,10 @@ export default async function AccountPage() {
                   Administrar usuarios
                 </Link>
                 <Link
-                  href="/admin/design-options"
+                  href="/admin/products"
                   className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
-                  Configurar opciones de diseño
+                  Crear producto
                 </Link>
                 <Link
                   href="/design"
@@ -137,8 +137,8 @@ export default async function AccountPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/admin/design-options" className="font-semibold text-brand-yellow hover:underline">
-                    Configurar opciones del editor
+                  <Link href="/admin/products" className="font-semibold text-brand-yellow hover:underline">
+                    Crear nuevos productos
                   </Link>
                 </li>
                 <li>

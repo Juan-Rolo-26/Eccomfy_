@@ -268,6 +268,7 @@ function revalidateContentPaths() {
   revalidatePath("/design");
   revalidatePath("/products");
   revalidatePath("/admin/content");
+  revalidatePath("/admin/products");
 }
 
 function parseId(formData: FormData, key = "id"): number | null {

@@ -7,7 +7,7 @@ import { requireStaff } from "@/lib/auth";
 
 const DESIGN_INDEX_PATH = "/design";
 const DESIGN_PRODUCT_PATH = "/design/[slug]";
-const ADMIN_PATH = "/admin/design-options";
+const ADMIN_PATH = "/admin/products";
 
 export type FormState = {
   error?: string;
