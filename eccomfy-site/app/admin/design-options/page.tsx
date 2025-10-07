@@ -53,7 +53,7 @@ export default async function DesignOptionsPage() {
             Usuarios
           </Link>
           <Link
-            href="/design/mailer"
+            href="/design"
             className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             Ver editor

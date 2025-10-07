@@ -150,7 +150,7 @@ export default async function Home() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/design/mailer"
+                  href="/design"
                   className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-6 py-3 text-base font-semibold text-brand-navy shadow-lg shadow-brand-navy/20 transition hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   Empezar ahora
@@ -415,7 +415,7 @@ export default async function Home() {
               </p>
             </div>
             <Link
-              href="/design/mailer"
+              href="/design"
               className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#07162E]"
             >
               Diseñar ahora

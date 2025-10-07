@@ -80,7 +80,7 @@ export default async function AccountPage() {
                   Configurar opciones de diseño
                 </Link>
                 <Link
-                  href="/design/mailer"
+                  href="/design"
                   className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   Ir al configurador 3D
@@ -95,7 +95,7 @@ export default async function AccountPage() {
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
-                  href="/design/mailer"
+                  href="/design"
                   className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-5 py-3 text-sm font-semibold text-brand-navy shadow-lg shadow-brand-navy/10 transition hover:-translate-y-0.5 hover:shadow-xl"
                 >
                   Diseñar un mailer
@@ -147,7 +147,7 @@ export default async function AccountPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/design/mailer" className="font-semibold text-brand-yellow hover:underline">
+                  <Link href="/design" className="font-semibold text-brand-yellow hover:underline">
                     Probar el configurador como cliente
                   </Link>
                 </li>
@@ -163,7 +163,7 @@ export default async function AccountPage() {
               <h2 className="text-xl font-semibold">¿Buscás algo puntual?</h2>
               <ul className="mt-4 space-y-3 text-sm text-white/70">
                 <li>
-                  <Link href="/design/mailer" className="font-semibold text-brand-yellow hover:underline">
+                  <Link href="/design" className="font-semibold text-brand-yellow hover:underline">
                     Crear un nuevo diseño desde cero
                   </Link>
                 </li>

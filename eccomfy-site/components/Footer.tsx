@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Footer() {
   const navLinks = [
     { href: "/products", label: "Catálogo" },
-    { href: "/design/mailer", label: "Diseñá online" },
+    { href: "/design", label: "Diseñá online" },
     { href: "/contact", label: "Contacto" },
   ];
 

@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import db from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
 
-const DESIGN_PATH = "/design/[style]";
+const DESIGN_INDEX_PATH = "/design";
+const DESIGN_PRODUCT_PATH = "/design/[slug]";
 const ADMIN_PATH = "/admin/design-options";
 
 export type FormState = {
@@ -14,7 +15,8 @@ export type FormState = {
 };
 
 function revalidateDesign() {
-  revalidatePath(DESIGN_PATH);
+  revalidatePath(DESIGN_INDEX_PATH);
+  revalidatePath(DESIGN_PRODUCT_PATH);
   revalidatePath(ADMIN_PATH);
 }
 
