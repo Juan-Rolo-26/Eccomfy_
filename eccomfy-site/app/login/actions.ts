@@ -2,11 +2,10 @@
 
 import { redirect } from "next/navigation";
 
-import { EmailNotVerifiedError, signIn, verifyUser } from "@/lib/auth";
+import { signIn, verifyUser } from "@/lib/auth";
 
 export type LoginState = {
   error?: string;
-  needsVerification?: boolean;
   email?: string;
 };
 
@@ -26,13 +25,6 @@ export async function loginAction(_prev: LoginState, formData: FormData): Promis
 
     await signIn(user);
   } catch (error) {
-    if (error instanceof EmailNotVerifiedError) {
-      return {
-        error: "Necesitás verificar tu email antes de ingresar.",
-        needsVerification: true,
-        email,
-      };
-    }
     console.error("loginAction", error);
     return { error: "No pudimos iniciar sesión. Intentá de nuevo.", email };
   }

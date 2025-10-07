@@ -13,13 +13,6 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 días
 const EMAIL_VERIFICATION_TTL_MS = 1000 * 60 * 30; // 30 minutos
 const PASSWORD_RESET_TTL_MS = 1000 * 60 * 60; // 60 minutos
 
-export class EmailNotVerifiedError extends Error {
-  constructor() {
-    super("EMAIL_NOT_VERIFIED");
-    this.name = "EmailNotVerifiedError";
-  }
-}
-
 export type EmailVerificationErrorCode =
   | "EMAIL_NOT_FOUND"
   | "EMAIL_ALREADY_VERIFIED"
@@ -365,7 +358,7 @@ export async function createUser(name: string, email: string, password: string):
   try {
     const makeStaff = !hasAnyStaff();
     const insert = db.prepare(
-      "INSERT INTO users (name, email, password_hash, is_staff) VALUES (?, ?, ?, ?)",
+      "INSERT INTO users (name, email, password_hash, is_staff, email_verified_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
     );
     const info = insert.run(cleanName, cleanEmail, passwordHash, makeStaff ? 1 : 0);
     const userRow = db
@@ -397,11 +390,15 @@ export async function verifyUser(email: string, password: string): Promise<SafeU
   const isValid = await bcrypt.compare(password, user.password_hash);
   if (!isValid) return null;
 
+  let record = user;
   if (!user.email_verified_at) {
-    throw new EmailNotVerifiedError();
+    db.prepare("UPDATE users SET email_verified_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
+    const refreshed = getUserByIdInternal(user.id);
+    if (refreshed) {
+      record = refreshed;
+    }
   }
 
-  let record = user;
   if (!record.is_staff && !hasAnyStaff()) {
     db.prepare("UPDATE users SET is_staff = 1 WHERE id = ?").run(record.id);
     record = { ...record, is_staff: 1 };

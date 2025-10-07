@@ -1,7 +1,15 @@
 import StyleCard from "../../components/StyleCard";
+import { redirect } from "next/navigation";
+
+import { getCurrentUser } from "@/lib/auth";
 import { getProductStyles } from "@/lib/content";
 
 export default async function Products() {
+  const user = await getCurrentUser();
+  if (user?.is_staff) {
+    redirect("/admin/content");
+  }
+
   const productStyles = await getProductStyles();
 
   return (
