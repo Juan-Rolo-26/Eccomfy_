@@ -317,12 +317,11 @@ export default async function Home() {
                   Experiencia inmersiva
                 </p>
                 <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
-                  Revisá tus diseños con el showroom digital que usamos en Eccomfy.
+                  Activá el modo showroom y recorré tus diseños dentro del estudio Eccomfy.
                 </h2>
                 <p className="text-base text-white/75 sm:max-w-xl">
-                  Replicamos la misma iluminación, cámaras y controles de color que utilizamos al presentar proyectos a
-                  clientes reales. Ajustá medidas, verificá acabados y compartí un recorrido 3D listo para aprobación sin
-                  esperar a la sesión fotográfica.
+                  Preparamos un set escénico propio con cámaras dinámicas, iluminación inteligente y presets cinematográficos
+                  para que cada mockup parezca salido de una producción real. Elegí la escena ideal y compartila al instante.
                 </p>
 
                 <div className="grid gap-5 sm:grid-cols-3">
@@ -443,13 +442,11 @@ export default async function Home() {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:items-center">
           <div className="space-y-4">
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Ambientaciones premium</p>
-            <h2 className="text-3xl font-semibold text-white sm:text-4xl">
-              Escenarios reales del estudio para presentar tus cajas con solidez
-            </h2>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">Escenarios listos para enamorar a tus clientes</h2>
             <p className="text-sm text-white/70 sm:text-base">
-              Seleccionamos ambientaciones basadas en proyectos de Eccomfy: mesas de producto, mostradores de retail y sets
-              editoriales listos para exportar. Cada preset respeta proporciones reales y curvas de iluminación validadas en
-              campañas con clientes, así podés mostrar resultados profesionales desde el primer render.
+              Elegí entre colecciones inspiradas en showrooms, displays minoristas y estudios fotográficos para presentar tu
+              packaging en contextos aspiracionales. Cada escena está optimizada para exportar a redes, e-commerce o
+              presentaciones comerciales.
             </p>
           </div>
 
