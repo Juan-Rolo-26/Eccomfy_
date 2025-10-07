@@ -92,7 +92,7 @@ export default function RegisterForm() {
       <SubmitButton />
 
       <p className="text-sm text-white/70">
-        Te vamos a enviar un código de verificación al email ingresado. Necesitás validarlo antes de acceder al panel.
+        Una vez creada la cuenta vas a ingresar directo al panel para empezar a cargar diseños y productos.
       </p>
 
       <p className="text-sm text-white/70">
