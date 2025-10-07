@@ -45,7 +45,7 @@ export default async function DesignCatalogPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             {isStaff ? (
               <Link
-                href="/admin/content"
+                href="/admin/products"
                 className="inline-flex items-center justify-center rounded-full bg-brand-yellow px-5 py-2 text-sm font-semibold text-brand-navy shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
               >
                 Cargar producto desde el admin
