@@ -32,6 +32,7 @@ export default function Header({ user }: HeaderProps) {
         { href: "/admin/products", label: "Crear producto" },
         { href: "/admin/users", label: "Usuarios" },
         { href: "/admin/content", label: "Contenido" },
+        { href: "/admin/users", label: "Usuarios" },
         { href: "/account", label: "Mi cuenta" },
       ]
     : [

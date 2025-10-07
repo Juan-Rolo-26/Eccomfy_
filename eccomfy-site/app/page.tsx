@@ -11,7 +11,18 @@ import {
   summarizeProductStyle,
 } from "@/lib/content";
 
-type IconName = "sparkles" | "layers" | "support" | "leaf" | "grid" | "puzzle" | "check";
+type IconName =
+  | "sparkles"
+  | "layers"
+  | "support"
+  | "leaf"
+  | "grid"
+  | "puzzle"
+  | "check"
+  | "compass"
+  | "wave"
+  | "camera"
+  | "sunrise";
 
 const ICONS: Record<IconName, ReactElement> = {
   sparkles: (
@@ -52,6 +63,26 @@ const ICONS: Record<IconName, ReactElement> = {
   check: (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
       <path d="M9.707 17.293a1 1 0 01-1.414 0l-3.586-3.586 1.414-1.414L9 14.586l8.879-8.88 1.414 1.415-9.586 9.586z" />
+    </svg>
+  ),
+  compass: (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M12 2a10 10 0 1010 10A10.011 10.011 0 0012 2zm0 2a8 8 0 11-8 8 8.009 8.009 0 018-8zm3.536 4.464l-2.121 5.657-5.657 2.121 2.121-5.657z" />
+    </svg>
+  ),
+  wave: (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M3 12.5c1.5 0 2.25-.75 3.75-.75s2.25.75 3.75.75 2.25-.75 3.75-.75S16.5 12.5 18 12.5s2.25-.75 3.75-.75V15c-1.5 0-2.25.75-3.75.75s-2.25-.75-3.75-.75-2.25.75-3.75.75-2.25-.75-3.75-.75S4.5 15 3 15z" />
+    </svg>
+  ),
+  camera: (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M9 4l-1.5 2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2h-3.5L15 4zm3 5a4 4 0 11-4 4 4 4 0 014-4zm0 2.5A1.5 1.5 0 1013.5 13 1.5 1.5 0 0012 11.5z" />
+    </svg>
+  ),
+  sunrise: (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
+      <path d="M12 3l3 3h-2v4h-2V6H9zm0 8a7 7 0 017 7h-2a5 5 0 00-10 0H5a7 7 0 017-7zm9 2l-1.414 1.414-1.414-1.414L19.172 13zm-16.97-2l1.414 1.414L4.03 15.828 2.616 14.414zM12 21a2 2 0 01-2-2h4a2 2 0 01-2 2z" />
     </svg>
   ),
 };
@@ -112,6 +143,75 @@ const BENEFITS = [
   "Tiradas flexibles con lead time corto.",
   "Mockups y archivos listos para imprenta.",
   "Acompañamiento de especialistas en packaging.",
+];
+
+const IMMERSIVE_FEATURES = [
+  {
+    title: "Estudio 360°",
+    description:
+      "Simulaciones fluidas con cámaras orbitando tu packaging en un showroom digital con marca propia.",
+    icon: "compass" as const,
+  },
+  {
+    title: "Luz inteligente",
+    description:
+      "Reflejos dinámicos que se adaptan a foil, stamping y barnices para mostrar cada acabado como en vivo.",
+    icon: "wave" as const,
+  },
+  {
+    title: "Tomas editoriales",
+    description:
+      "Render 3D con fondos curados y presets cinematográficos listos para tus decks y redes.",
+    icon: "camera" as const,
+  },
+];
+
+const RIBBON_ITEMS = [
+  "SHOWROOM 3D",
+  "MOCKUPS ULTRA HD",
+  "TEXTURAS REALES",
+  "CÁMARAS DINÁMICAS",
+  "ACABADOS PREMIUM",
+  "ESTUDIO ECCOMFY",
+];
+
+const SENSORY_MOMENTS = [
+  {
+    title: "Soft Loft",
+    description:
+      "Iluminación cálida con destellos dorados suaves que elevan bordes biselados y detalles en foil.",
+    tagline: "LUZ DE ESTUDIO",
+    icon: "sunrise" as const,
+    backgroundClass: "bg-gradient-to-br from-brand-yellow/25 via-brand-yellow/5 to-brand-blue/20",
+    glowClass: "bg-brand-yellow/40",
+  },
+  {
+    title: "Velvet Night",
+    description:
+      "Sombras profundas y brillos puntuales para packs premium que buscan un mood elegante y nocturno.",
+    tagline: "ATMÓSFERA PREMIUM",
+    icon: "sparkles" as const,
+    backgroundClass: "bg-gradient-to-br from-brand-blue/40 via-brand-navy/60 to-brand-navy/80",
+    glowClass: "bg-brand-blue/40",
+  },
+  {
+    title: "Aqua Glass",
+    description:
+      "Transparencias líquidas que envuelven el packaging con reflejos frescos y textura cristal.",
+    tagline: "DETALLE FRESCO",
+    icon: "wave" as const,
+    backgroundClass: "bg-gradient-to-br from-brand-sky/30 via-brand-blue/30 to-brand-navy/60",
+    glowClass: "bg-brand-sky/40",
+  },
+  {
+    title: "Spot Focus",
+    description:
+      "Luces cruzadas cenitales pensadas para lanzamientos, hero shots y campañas de e-commerce.",
+    tagline: "ESCENA LISTA",
+    icon: "layers" as const,
+    backgroundClass: "bg-gradient-to-br from-brand-navy/70 via-brand-blue/50 to-brand-yellow/20",
+    glowClass: "bg-brand-navy/40",
+  },
 ];
 
 function Icon({ name }: { name: IconName }) {
@@ -187,7 +287,7 @@ export default async function Home() {
                       </div>
                     </div>
                     <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
-                      <Image src="/c.png" alt="Shipper" fill className="object-contain p-4" />
+                      <Image src="/c.jpg" alt="Shipper" fill className="object-contain p-4" />
                     </div>
                     <div className="relative aspect-square overflow-hidden rounded-2xl bg-white">
                       <Image src="/b.png" alt="Product" fill className="object-contain p-4" />
@@ -199,6 +299,96 @@ export default async function Home() {
                 </div>
                 <div className="absolute -right-10 bottom-10 hidden h-28 w-28 rotate-12 rounded-3xl bg-brand-yellow/30 blur-2xl sm:block" />
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative -mt-12 sm:-mt-16">
+        <div className="container-xl">
+          <div className="relative overflow-hidden rounded-[3rem] border border-white/10 bg-gradient-to-br from-brand-navy/40 via-brand-blue/30 to-brand-navy/60 p-10 text-white shadow-[0_40px_120px_-60px_rgba(8,25,54,0.9)] backdrop-blur">
+            <div className="pointer-events-none absolute -left-24 top-10 h-64 w-64 rounded-full bg-brand-yellow/20 blur-3xl" aria-hidden />
+            <div className="pointer-events-none absolute -right-20 bottom-0 h-72 w-72 rounded-full bg-brand-blue/30 blur-3xl" aria-hidden />
+
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+              <div className="space-y-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.45em] text-white/60">
+                  Experiencia inmersiva
+                </p>
+                <h2 className="text-3xl font-semibold leading-tight sm:text-4xl">
+                  Activá el modo showroom y recorré tus diseños dentro del estudio Eccomfy.
+                </h2>
+                <p className="text-base text-white/75 sm:max-w-xl">
+                  Preparamos un set escénico propio con cámaras dinámicas, iluminación inteligente y presets cinematográficos
+                  para que cada mockup parezca salido de una producción real. Elegí la escena ideal y compartila al instante.
+                </p>
+
+                <div className="grid gap-5 sm:grid-cols-3">
+                  {IMMERSIVE_FEATURES.map((feature) => (
+                    <div key={feature.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-brand-yellow">
+                        <Icon name={feature.icon} />
+                      </div>
+                      <p className="mt-4 text-sm font-semibold text-white">{feature.title}</p>
+                      <p className="mt-2 text-xs text-white/70">{feature.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="absolute -inset-10 -z-10 rounded-full bg-brand-yellow/10 blur-3xl" aria-hidden />
+                <div className="relative overflow-hidden rounded-[2.5rem] border border-white/15 bg-white/10 p-8 shadow-inner backdrop-blur-xl">
+                  <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6">
+                    <Image
+                      src="/illustrations/studio.svg"
+                      alt="Visual del estudio Eccomfy con cajas iluminadas"
+                      width={420}
+                      height={220}
+                      className="mx-auto h-auto w-full max-w-sm"
+                    />
+                  </div>
+                  <div className="mt-6 grid gap-3 text-sm text-white/80">
+                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-yellow/15 text-brand-yellow">
+                        <Icon name="sparkles" />
+                      </span>
+                      <p>Luces volumétricas que siguen el contorno de tu packaging y generan profundidad instantánea.</p>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-blue/20 text-brand-yellow">
+                        <Icon name="layers" />
+                      </span>
+                      <p>Fondos configurables con texturas acuáticas, mármol o madera premium sin salir del panel.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute inset-x-0 bottom-0" aria-hidden>
+              <svg viewBox="0 0 1440 120" className="h-20 w-full text-brand-navy/70" preserveAspectRatio="none">
+                <path
+                  fill="currentColor"
+                  d="M0 96l40-10.7C80 75 160 53 240 58.7 320 64 400 96 480 106.7 560 117 640 107 720 85.3 800 64 880 32 960 26.7 1040 21 1120 43 1200 53.3 1280 64 1360 64 1400 64h40v56H0z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="container-xl mt-12">
+        <div className="relative overflow-hidden rounded-full border border-white/10 bg-white/5 py-3 pl-6 pr-12 shadow-card">
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-brand-navy to-transparent" aria-hidden />
+          <div className="marquee group text-xs font-semibold uppercase tracking-[0.4em] text-white/60">
+            <div className="marquee__inner">
+              {RIBBON_ITEMS.concat(RIBBON_ITEMS).map((item, index) => (
+                <span key={`${item}-${index}`} className="flex items-center gap-4">
+                  <span>{item}</span>
+                  <span className="h-1 w-1 rounded-full bg-white/30" aria-hidden />
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -242,6 +432,44 @@ export default async function Home() {
           </div>
         </section>
       )}
+
+      <section className="container-xl mt-24">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:items-center">
+          <div className="space-y-4">
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/60">Ambientaciones premium</p>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">Escenarios listos para enamorar a tus clientes</h2>
+            <p className="text-sm text-white/70 sm:text-base">
+              Elegí entre colecciones inspiradas en showrooms, displays minoristas y estudios fotográficos para presentar tu
+              packaging en contextos aspiracionales. Cada escena está optimizada para exportar a redes, e-commerce o
+              presentaciones comerciales.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            {SENSORY_MOMENTS.map((moment) => (
+              <div
+                key={moment.title}
+                className={`relative overflow-hidden rounded-[2rem] border border-white/10 p-6 text-white shadow-card ${moment.backgroundClass}`}
+              >
+                <div className={`pointer-events-none absolute -top-16 right-[-40px] h-40 w-40 rounded-full blur-3xl ${moment.glowClass}`} aria-hidden />
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-brand-yellow">
+                      <Icon name={moment.icon} />
+                    </span>
+                    <p className="text-base font-semibold text-white">{moment.title}</p>
+                  </div>
+                  <p className="text-sm text-white/75">{moment.description}</p>
+                  <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-white/60">
+                    <span>{moment.tagline}</span>
+                    <span className="h-px flex-1 bg-white/20" aria-hidden />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {productStyles.length > 0 && (
         <section className="container-xl mt-24">
