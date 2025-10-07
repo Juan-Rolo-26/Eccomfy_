@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import db from "@/lib/db";
 import { requireStaff } from "@/lib/auth";
 import type { ProductConfiguration } from "@/lib/content";
+import { saveProductImage } from "@/lib/uploads";
 
 export type ContentFormState = {
   error?: string;
@@ -265,9 +266,10 @@ function parsePosition(input: FormDataEntryValue | null): number | null {
 
 function revalidateContentPaths() {
   revalidatePath("/");
+  revalidatePath("/design");
   revalidatePath("/products");
   revalidatePath("/admin/content");
-  revalidatePath("/products");
+  revalidatePath("/admin/products");
 }
 
 function parseId(formData: FormData, key = "id"): number | null {
@@ -285,7 +287,8 @@ export async function createProductStyleAction(
   await requireStaff();
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const image = String(formData.get("image") ?? "").trim();
+  const imageInput = String(formData.get("image") ?? "").trim();
+  const imageFile = formData.get("imageFile");
   const position = parsePosition(formData.get("position"));
   const slugInput = String(formData.get("slug") ?? "").trim();
   const slug = normalizeSlug(slugInput || title);
@@ -301,6 +304,17 @@ export async function createProductStyleAction(
   const configResult = buildProductConfiguration(formData);
   if (!configResult.ok) {
     return { error: configResult.error };
+  }
+
+  let image = imageInput;
+
+  if (imageFile instanceof File && imageFile.size > 0) {
+    try {
+      image = await saveProductImage(imageFile, slug);
+    } catch (error) {
+      console.error("saveProductImage", error);
+      return { error: "No pudimos guardar la imagen del producto." };
+    }
   }
 
   if (!title || !description || !image || position === null) {
