@@ -1,28 +1,13 @@
 import Link from "next/link";
 
 import { requireStaff } from "@/lib/auth";
-import { getProductStyles, getMetrics, getTestimonials, getBrands } from "@/lib/content";
-import {
-  ProductStyleForm,
-  MetricForm,
-  TestimonialForm,
-  BrandForm,
-} from "./ContentForms";
-import {
-  deleteProductStyleAction,
-  deleteMetricAction,
-  deleteTestimonialAction,
-  deleteBrandAction,
-} from "./actions";
+import { getMetrics, getTestimonials, getBrands } from "@/lib/content";
+import { MetricForm, TestimonialForm, BrandForm } from "./ContentForms";
+import { deleteMetricAction, deleteTestimonialAction, deleteBrandAction } from "./actions";
 
 export default async function ContentAdminPage() {
   const user = await requireStaff();
-  const [productStyles, metrics, testimonials, brands] = await Promise.all([
-    getProductStyles(),
-    getMetrics(),
-    getTestimonials(),
-    getBrands(),
-  ]);
+  const [metrics, testimonials, brands] = await Promise.all([getMetrics(), getTestimonials(), getBrands()]);
 
   return (
     <div className="container-xl py-16">
@@ -31,7 +16,8 @@ export default async function ContentAdminPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Panel de contenidos</p>
           <h1 className="mt-2 text-4xl font-semibold text-white">Hola, {user.name.split(" ")[0] || user.name}</h1>
           <p className="mt-2 max-w-2xl text-white/70">
-            Cargá productos, métricas, testimonios y marcas para que aparezcan automáticamente en la landing. Si una sección no tiene registros, no se mostrará.
+            Actualizá métricas, testimonios y marcas para mantener fresca la landing comercial. Si una sección no tiene registros,
+            no se mostrará.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -40,6 +26,12 @@ export default async function ContentAdminPage() {
             className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             Gestionar usuarios
+          </Link>
+          <Link
+            href="/admin/products"
+            className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Crear producto
           </Link>
           <Link
             href="/"
@@ -52,24 +44,12 @@ export default async function ContentAdminPage() {
 
       <div className="mt-12 grid gap-10 lg:grid-cols-[1.1fr,0.9fr]">
         <div className="space-y-10">
-          <ProductStyleForm />
           <MetricForm />
           <TestimonialForm />
           <BrandForm />
         </div>
 
         <div className="space-y-6">
-          <ContentList
-            title="Productos cargados"
-            items={productStyles.map((item) => ({
-              id: item.id,
-              primary: item.title,
-              secondary: `${item.description} · slug: ${item.slug} · ${item.configuration.sizes.length} medidas · ${item.configuration.materials.length} materiales`,
-              href: item.href,
-            }))}
-            emptyLabel="Todavía no hay productos."
-            deleteAction={deleteProductStyleAction}
-          />
           <ContentList
             title="Métricas cargadas"
             items={metrics.map((item) => ({

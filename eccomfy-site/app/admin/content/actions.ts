@@ -265,9 +265,10 @@ function parsePosition(input: FormDataEntryValue | null): number | null {
 
 function revalidateContentPaths() {
   revalidatePath("/");
+  revalidatePath("/design");
   revalidatePath("/products");
   revalidatePath("/admin/content");
-  revalidatePath("/products");
+  revalidatePath("/admin/products");
 }
 
 function parseId(formData: FormData, key = "id"): number | null {
