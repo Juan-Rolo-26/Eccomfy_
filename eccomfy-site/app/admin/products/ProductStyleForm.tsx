@@ -41,11 +41,7 @@ export function ProductStyleForm() {
   const [state, formAction] = useFormState(createProductStyleAction, INITIAL_STATE);
 
   return (
-    <form
-      action={formAction}
-      encType="multipart/form-data"
-      className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur"
-    >
+    <form action={formAction} className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-white">Crear producto</h3>
@@ -87,32 +83,15 @@ export function ProductStyleForm() {
         />
       </label>
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-3 rounded-2xl border border-white/10 bg-white/10 p-4">
-          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-            Imagen principal
-            <span className="mt-2 block text-[11px] text-white/60">
-              Subí un archivo para el catálogo o indicá una ruta existente. Formatos aceptados: JPG, PNG, WebP.
-            </span>
-          </label>
-          <label className="block text-xs font-semibold text-white/80">
-            Cargar archivo
-            <input
-              name="imageFile"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              className="mt-2 w-full rounded-xl border border-dashed border-white/20 bg-white/5 px-3 py-2 text-sm text-white file:mr-4 file:rounded-lg file:border-0 file:bg-brand-yellow file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-navy focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            />
-          </label>
-          <label className="block text-xs font-semibold text-white/80">
-            O usar una URL existente
-            <input
-              name="image"
-              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-              placeholder="/productos/caja-botella.png"
-            />
-          </label>
-          <p className="text-[11px] text-white/50">Si cargás un archivo, lo guardaremos automáticamente en la biblioteca de productos.</p>
-        </div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Imagen (ruta)
+          <input
+            name="image"
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder="/productos/caja-botella.png"
+            required
+          />
+        </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
           Posición
           <input
