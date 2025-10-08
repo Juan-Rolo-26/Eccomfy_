@@ -4,6 +4,8 @@ import Image from "next/image";
 import type { SafeUser } from "@/lib/auth";
 import type { ProductStyle } from "@/lib/content";
 
+import { ProductStaffEditor } from "./ProductStaffEditor";
+
 type Props = {
   product: ProductStyle;
   user: SafeUser;
@@ -13,7 +15,7 @@ export default function DesignStaffBlock({ product, user }: Props) {
   const prettyLabel = product.title;
 
   return (
-    <div className="container-xl py-16">
+    <div className="container-xl space-y-12 py-16">
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="rounded-[3rem] border border-white/15 bg-white/5 p-10 backdrop-blur">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Acceso restringido</p>
@@ -46,6 +48,8 @@ export default function DesignStaffBlock({ product, user }: Props) {
           </p>
         </div>
       </div>
+
+      <ProductStaffEditor product={product} />
     </div>
   );
 }
