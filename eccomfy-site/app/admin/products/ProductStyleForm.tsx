@@ -1,12 +1,105 @@
 "use client";
 
+import { useMemo, type ReactNode } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+
+import type { ProductStyle } from "@/lib/content";
 
 import { createProductStyleAction, type ContentFormState } from "../content/actions";
 
 const INITIAL_STATE: ContentFormState = {};
 
-function SubmitButton({ label }: { label: string }) {
+export type ProductFormDefaults = {
+  title: string;
+  slug: string;
+  description: string;
+  image: string;
+  position: string;
+  sizes: string;
+  productType: string;
+  possibilities: string;
+  stock: string;
+  baseColors: string;
+  serigraphyColors: string;
+  unitPrice: string;
+  minPurchase: string;
+  maxPurchase: string;
+  materials: string;
+};
+
+export function buildEmptyProductDefaults(position = 0): ProductFormDefaults {
+  return {
+    title: "",
+    slug: "",
+    description: "",
+    image: "",
+    position: String(position ?? 0),
+    sizes: "",
+    productType: "",
+    possibilities: "",
+    stock: "",
+    baseColors: "",
+    serigraphyColors: "",
+    unitPrice: "",
+    minPurchase: "",
+    maxPurchase: "",
+    materials: "",
+  };
+}
+
+export function productToFormDefaults(product: ProductStyle): ProductFormDefaults {
+  const { configuration } = product;
+  const formatSizeLine = (size: (typeof configuration)["sizes"][number]): string => {
+    const baseParts = [size.label, size.width_mm, size.height_mm, size.depth_mm]
+      .map((value) => String(value ?? ""))
+      .filter((value) => value.length > 0);
+    if (typeof size.base_price === "number" && Number.isFinite(size.base_price)) {
+      baseParts.push(Number(size.base_price).toFixed(2));
+    }
+    return baseParts.join("|");
+  };
+
+  const formatMaterialLine = (material: (typeof configuration)["materials"][number]): string => {
+    const parts = [material.label];
+    if (material.description) {
+      parts.push(material.description);
+    }
+    if (typeof material.price_modifier === "number" && material.price_modifier !== 1) {
+      parts.push(Number(material.price_modifier).toFixed(4));
+    }
+    return parts.join("|");
+  };
+
+  return {
+    title: product.title ?? "",
+    slug: product.slug ?? "",
+    description: product.description ?? "",
+    image: product.image ?? "",
+    position: String(product.position ?? 0),
+    sizes: configuration.sizes.map(formatSizeLine).join("\n"),
+    productType: configuration.product_type ?? "",
+    possibilities: configuration.possibilities.join("\n"),
+    stock:
+      configuration.stock !== null && configuration.stock !== undefined ? String(configuration.stock) : "",
+    baseColors: configuration.base_colors.join("\n"),
+    serigraphyColors: configuration.serigraphy_colors.join("\n"),
+    unitPrice:
+      configuration.unit_price !== null && configuration.unit_price !== undefined
+        ? Number(configuration.unit_price).toFixed(2)
+        : "",
+    minPurchase:
+      configuration.min_quantity !== null && configuration.min_quantity !== undefined
+        ? String(configuration.min_quantity)
+        : "",
+    maxPurchase:
+      configuration.max_quantity !== null && configuration.max_quantity !== undefined
+        ? String(configuration.max_quantity)
+        : "",
+    materials: configuration.materials.map(formatMaterialLine).join("\n"),
+  };
+}
+
+export function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -19,7 +112,7 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
-function FormMessage({ state }: { state: ContentFormState }) {
+export function FormMessage({ state }: { state: ContentFormState }) {
   if (state.error) {
     return (
       <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-2 text-xs font-medium text-red-200">
@@ -37,9 +130,13 @@ function FormMessage({ state }: { state: ContentFormState }) {
   return null;
 }
 
-export function ProductStyleForm() {
-  const [state, formAction] = useFormState(createProductStyleAction, INITIAL_STATE);
+type FieldSectionProps = {
+  title: string;
+  description: string;
+  children: ReactNode;
+};
 
+function FieldSection({ title, description, children }: FieldSectionProps) {
   return (
     <form
       action={formAction}
@@ -53,46 +150,23 @@ export function ProductStyleForm() {
             Cargá toda la información comercial y técnica para que aparezca en el catálogo y el editor 3D.
           </p>
         </div>
-        <SubmitButton label="Guardar producto" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Título
-          <input
-            name="title"
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="Caja para botellas"
-            required
-          />
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Identificador (slug)
-          <input
-            name="slug"
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="caja-botella"
-          />
-          <p className="mt-1 text-[11px] text-white/50">
-            Se usa para la URL: /design/&lt;slug&gt;. Se completa automáticamente si lo dejás vacío.
-          </p>
-        </label>
-      </div>
-      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-        Descripción breve
-        <input
-          name="description"
-          className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-          placeholder="Firme, premium y perfecto para e-commerce."
-          required
-        />
-      </label>
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Imagen (ruta)
-          <input
-            name="image"
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder="/productos/caja-botella.png"
+      )}
+
+      <FieldSection title="Identidad" description="Nombre comercial, identificador y presentación básica del producto.">
+        <Field label="Título" hint="Elegí un nombre comercial fácil de reconocer.">
+          <TextInput name="title" placeholder="Caja para botellas" defaultValue={defaults.title} required />
+        </Field>
+        <Field
+          label="Identificador (slug)"
+          hint="Se usa para la URL: /design/&lt;slug&gt;. Se completa automáticamente si lo dejás vacío."
+        >
+          <TextInput name="slug" placeholder="caja-botella" defaultValue={defaults.slug} />
+        </Field>
+        <Field label="Descripción breve" className="md:col-span-2">
+          <TextInput
+            name="description"
+            placeholder="Firme, premium y perfecto para e-commerce."
+            defaultValue={defaults.description}
             required
           />
           <p className="mt-1 text-[11px] text-white/50">Podés cargar una ruta existente o subir una imagen debajo.</p>
@@ -103,12 +177,12 @@ export function ProductStyleForm() {
             name="position"
             type="number"
             min={0}
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
             placeholder="0"
+            defaultValue={defaults.position}
             required
           />
-        </label>
-      </div>
+        </Field>
+      </FieldSection>
 
       <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
         Imagen desde tu computadora

@@ -225,9 +225,15 @@ function buildProductConfiguration(formData: FormData): ParseResult<ProductConfi
   return { ok: true, value: configuration };
 }
 
-function slugExists(slug: string): boolean {
-  const row = db.prepare<{ count: number }>("SELECT COUNT(*) as count FROM product_styles WHERE slug = ?").get(slug);
-  return (row?.count ?? 0) > 0;
+function slugExists(slug: string, excludeId?: number): boolean {
+  const row = db.prepare<{ id: number }>("SELECT id FROM product_styles WHERE slug = ? LIMIT 1").get(slug);
+  if (!row) {
+    return false;
+  }
+  if (excludeId && row.id === excludeId) {
+    return false;
+  }
+  return true;
 }
 
 function parsePosition(input: FormDataEntryValue | null): number | null {
@@ -252,6 +258,20 @@ function parseId(formData: FormData, key = "id"): number | null {
     return null;
   }
   return Math.floor(value);
+}
+
+type ExistingProductRow = {
+  id: number;
+  slug: string;
+  image: string;
+  href: string;
+};
+
+function findProductById(id: number): ExistingProductRow | null {
+  const row = db
+    .prepare<ExistingProductRow>("SELECT id, slug, image, href FROM product_styles WHERE id = ? LIMIT 1")
+    .get(id);
+  return row ?? null;
 }
 
 export async function createProductStyleAction(
@@ -306,6 +326,72 @@ export async function createProductStyleAction(
   } catch (error) {
     console.error("createProductStyleAction", error);
     return { error: "No pudimos guardar el producto." };
+  }
+}
+
+export async function updateProductStyleAction(
+  _prev: ContentFormState,
+  formData: FormData,
+): Promise<ContentFormState> {
+  await requireStaff();
+  const id = parseId(formData);
+  if (!id) {
+    return { error: "No encontramos el producto indicado." };
+  }
+
+  const existing = findProductById(id);
+  if (!existing) {
+    return { error: "El producto que querés editar no existe." };
+  }
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const imageInput = String(formData.get("image") ?? "").trim();
+  const imageFile = formData.get("imageFile");
+  const position = parsePosition(formData.get("position"));
+  const slugInput = String(formData.get("slug") ?? "").trim();
+  const slug = normalizeSlug(slugInput || title);
+
+  if (!slug) {
+    return { error: "Ingresá un identificador válido (solo letras, números y guiones)." };
+  }
+
+  if (slugExists(slug, id)) {
+    return { error: "Ya existe un producto con ese identificador." };
+  }
+
+  const configResult = buildProductConfiguration(formData);
+  if (!configResult.ok) {
+    return { error: configResult.error };
+  }
+
+  let image = imageInput || existing.image;
+
+  if (imageFile instanceof File && imageFile.size > 0) {
+    try {
+      image = await saveProductImage(imageFile, slug);
+    } catch (error) {
+      console.error("saveProductImage", error);
+      return { error: "No pudimos guardar la imagen del producto." };
+    }
+  }
+
+  if (!title || !description || !image || position === null) {
+    return { error: "Completá todos los campos." };
+  }
+
+  try {
+    const href = `/design/${slug}`;
+    db.prepare(
+      "UPDATE product_styles SET slug = ?, title = ?, description = ?, href = ?, image = ?, config = ?, position = ? WHERE id = ?",
+    ).run(slug, title, description, href, image, JSON.stringify(configResult.value), position, id);
+    revalidateContentPaths();
+    revalidatePath(href);
+    revalidatePath(existing.href);
+    return { success: "Actualizado correctamente." };
+  } catch (error) {
+    console.error("updateProductStyleAction", error);
+    return { error: "No pudimos actualizar el producto." };
   }
 }
 

@@ -53,6 +53,7 @@ export type ProductStyle = {
   href: string;
   image: string;
   configuration: ProductConfiguration;
+  position: number;
 };
 
 export type Metric = {
@@ -228,7 +229,7 @@ export function getProductStyles(): ProductStyle[] {
       "SELECT id, slug, title, description, href, image, config, position FROM product_styles ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, slug, title, description, href, image, config }) => ({
+  return rows.map(({ id, slug, title, description, href, image, config, position }) => ({
     id,
     slug,
     title,
@@ -236,6 +237,7 @@ export function getProductStyles(): ProductStyle[] {
     href,
     image,
     configuration: parseProductConfig(config),
+    position,
   }));
 }
 
@@ -258,6 +260,7 @@ export function getProductStyleBySlug(slug: string): ProductStyle | null {
     href: row.href,
     image: row.image,
     configuration: parseProductConfig(row.config),
+    position: row.position,
   };
 }
 
