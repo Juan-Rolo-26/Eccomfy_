@@ -30,6 +30,18 @@ const parseLines = (value: string): string[] =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+function parseStringList(
+  raw: string,
+  label: string,
+  { allowEmpty = false }: { allowEmpty?: boolean } = {},
+): ParseResult<string[]> {
+  const lines = parseLines(raw);
+  if (!allowEmpty && lines.length === 0) {
+    return { ok: false, error: `Agregá al menos una opción en ${label.toLowerCase()}.` };
+  }
+  return { ok: true, value: lines };
+}
+
 const parseDecimal = (value: string): number | null => {
   const normalized = value.replace(/,/g, ".");
   const parsed = Number(normalized);
@@ -127,125 +139,87 @@ function parseMaterialsInput(raw: string, label: string): ParseResult<ProductCon
   return { ok: true, value: materials };
 }
 
-function parseQuantitiesInput(raw: string): ParseResult<ProductConfiguration["quantities"]> {
-  const lines = parseLines(raw);
-  if (lines.length === 0) {
-    return { ok: false, error: "Cargá al menos una cantidad disponible (formato: etiqueta|stock|multiplicador)." };
-  }
-
-  const quantities = [] as ProductConfiguration["quantities"];
-
-  for (const line of lines) {
-    const [label, quantityRaw, modifierRaw] = line.split("|").map((part) => part.trim());
-    if (!label || !quantityRaw) {
-      return {
-        ok: false,
-        error: "Cada cantidad debe incluir etiqueta y unidades disponibles (por ejemplo: 500 u).",
-      };
-    }
-
-    const quantity = parseInteger(quantityRaw);
-    if (quantity === null || quantity <= 0) {
-      return { ok: false, error: "Las unidades disponibles deben ser un entero mayor a 0." };
-    }
-
-    const modifier = modifierRaw ? parseDecimal(modifierRaw) : 1;
-    if (modifier === null || modifier <= 0) {
-      return {
-        ok: false,
-        error: "El multiplicador de precio para la cantidad debe ser un número mayor a 0.",
-      };
-    }
-
-    quantities.push({
-      label,
-      quantity,
-      price_modifier: Number(modifier.toFixed(4)),
-    });
-  }
-
-  return { ok: true, value: quantities };
-}
-
-function parseColorsInput(raw: string): ParseResult<ProductConfiguration["colors"]> {
-  const lines = parseLines(raw);
-  if (lines.length === 0) {
-    return { ok: true, value: [] };
-  }
-
-  const colors = [] as ProductConfiguration["colors"];
-
-  for (const line of lines) {
-    const [label, hexRaw, modifierRaw] = line.split("|").map((part) => part.trim());
-    if (!label) {
-      return { ok: false, error: "Cada color necesita un nombre." };
-    }
-
-    const modifier = modifierRaw ? parseDecimal(modifierRaw) : 1;
-    if (modifier === null || modifier <= 0) {
-      return { ok: false, error: "El multiplicador de color debe ser un número mayor a 0." };
-    }
-
-    const hex = hexRaw && /^#?[0-9a-fA-F]{6}$/.test(hexRaw) ? (hexRaw.startsWith("#") ? hexRaw : `#${hexRaw}`) : null;
-
-    colors.push({ label, hex, price_modifier: Number(modifier.toFixed(4)) });
-  }
-
-  return { ok: true, value: colors };
-}
-
 function buildProductConfiguration(formData: FormData): ParseResult<ProductConfiguration> {
   const sizesResult = parseSizesInput(String(formData.get("sizes") ?? ""));
   if (!sizesResult.ok) return sizesResult;
 
+  const productType = String(formData.get("productType") ?? "").trim();
+  if (!productType) {
+    return { ok: false, error: "Ingresá el tipo de producto (por ejemplo: caja o bolsa)." };
+  }
+
+  const possibilitiesResult = parseStringList(String(formData.get("possibilities") ?? ""), "Posibilidades", {
+    allowEmpty: true,
+  });
+  if (!possibilitiesResult.ok) return possibilitiesResult;
+
+  const baseColorsResult = parseStringList(String(formData.get("baseColors") ?? ""), "Colores base", {
+    allowEmpty: true,
+  });
+  if (!baseColorsResult.ok) return baseColorsResult;
+
+  const serigraphyColorsResult = parseStringList(
+    String(formData.get("serigraphyColors") ?? ""),
+    "Colores de serigrafía",
+    { allowEmpty: true },
+  );
+  if (!serigraphyColorsResult.ok) return serigraphyColorsResult;
+
   const materialsResult = parseMaterialsInput(String(formData.get("materials") ?? ""), "Materiales");
   if (!materialsResult.ok) return materialsResult;
 
-  const finishesResult = parseMaterialsInput(String(formData.get("finishes") ?? ""), "Acabados");
-  if (!finishesResult.ok) return finishesResult;
+  const stockRaw = String(formData.get("stock") ?? "").trim();
+  const stock = stockRaw ? parseInteger(stockRaw) : null;
+  if (!stockRaw || stock === null || stock < 0) {
+    return { ok: false, error: "El stock debe ser un número entero mayor o igual a 0." };
+  }
 
-  const printSidesResult = parseMaterialsInput(String(formData.get("printSides") ?? ""), "Caras impresas");
-  if (!printSidesResult.ok) return printSidesResult;
+  const unitPriceRaw = String(formData.get("unitPrice") ?? "").trim();
+  const unitPrice = unitPriceRaw ? parseDecimal(unitPriceRaw) : null;
+  if (!unitPriceRaw || unitPrice === null || unitPrice < 0) {
+    return { ok: false, error: "Ingresá el precio unitario de la caja." };
+  }
 
-  const speedsResult = parseMaterialsInput(String(formData.get("productionSpeeds") ?? ""), "Velocidades de producción");
-  if (!speedsResult.ok) return speedsResult;
-
-  const quantitiesResult = parseQuantitiesInput(String(formData.get("quantities") ?? ""));
-  if (!quantitiesResult.ok) return quantitiesResult;
-
-  const colorsResult = parseColorsInput(String(formData.get("colors") ?? ""));
-  if (!colorsResult.ok) return colorsResult;
-
-  const highlights = parseLines(String(formData.get("highlights") ?? ""));
-
-  const minQuantityRaw = String(formData.get("minQuantity") ?? "").trim();
-  const maxQuantityRaw = String(formData.get("maxQuantity") ?? "").trim();
+  const minQuantityRaw = String(formData.get("minPurchase") ?? "").trim();
+  const maxQuantityRaw = String(formData.get("maxPurchase") ?? "").trim();
 
   const minQuantity = minQuantityRaw ? parseInteger(minQuantityRaw) : null;
   if (minQuantityRaw && (minQuantity === null || minQuantity < 0)) {
-    return { ok: false, error: "El pedido mínimo debe ser un entero mayor o igual a 0." };
+    return { ok: false, error: "La compra mínima debe ser un entero mayor o igual a 0." };
   }
 
   const maxQuantity = maxQuantityRaw ? parseInteger(maxQuantityRaw) : null;
   if (maxQuantityRaw && (maxQuantity === null || maxQuantity <= 0)) {
-    return { ok: false, error: "El pedido máximo debe ser un entero mayor a 0." };
+    return { ok: false, error: "La compra máxima debe ser un entero mayor a 0." };
   }
 
   if (minQuantity !== null && maxQuantity !== null && maxQuantity < minQuantity) {
-    return { ok: false, error: "El máximo debe ser mayor o igual al mínimo." };
+    return { ok: false, error: "La compra máxima debe ser mayor o igual a la mínima." };
   }
+
+  const colorOptions = [...baseColorsResult.value, ...serigraphyColorsResult.value].map((label) => ({
+    label,
+    hex: null,
+    price_modifier: 1,
+  }));
 
   const configuration: ProductConfiguration = {
     sizes: sizesResult.value,
     materials: materialsResult.value,
-    finishes: finishesResult.value,
-    printSides: printSidesResult.value,
-    productionSpeeds: speedsResult.value,
-    quantities: quantitiesResult.value,
-    colors: colorsResult.value,
-    highlights,
+    finishes: [],
+    printSides: [],
+    productionSpeeds: [],
+    quantities: [],
+    colors: colorOptions,
+    highlights: [],
     min_quantity: minQuantity,
     max_quantity: maxQuantity,
+    product_type: productType,
+    possibilities: possibilitiesResult.value,
+    stock,
+    base_colors: baseColorsResult.value,
+    serigraphy_colors: serigraphyColorsResult.value,
+    unit_price: Number(unitPrice.toFixed(2)),
   };
 
   return { ok: true, value: configuration };

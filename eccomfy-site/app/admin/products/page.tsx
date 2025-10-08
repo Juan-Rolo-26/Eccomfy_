@@ -2,29 +2,12 @@ import Link from "next/link";
 
 import { requireStaff } from "@/lib/auth";
 import { getProductStyles } from "@/lib/content";
-import {
-  getDesignSizes,
-  getDesignMaterials,
-  getDesignFinishes,
-  getDesignPrintSides,
-  getDesignProductionSpeeds,
-  getDesignQuantities,
-} from "@/lib/designOptions";
 import { deleteProductStyleAction } from "../content/actions";
 import { ProductStyleForm } from "./ProductStyleForm";
-import { SizeForm, MaterialForm, FinishForm, PrintSideForm, SpeedForm, QuantityForm } from "./OptionForms";
 
 export default async function ProductsAdminPage() {
   const user = await requireStaff();
-  const [productStyles, sizes, materials, finishes, printSides, speeds, quantities] = await Promise.all([
-    getProductStyles(),
-    getDesignSizes(),
-    getDesignMaterials(),
-    getDesignFinishes(),
-    getDesignPrintSides(),
-    getDesignProductionSpeeds(),
-    getDesignQuantities(),
-  ]);
+  const productStyles = await getProductStyles();
 
   return (
     <div className="container-xl py-16 space-y-12">
@@ -33,7 +16,7 @@ export default async function ProductsAdminPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Administrar productos</p>
           <h1 className="mt-2 text-4xl font-semibold text-white">Hola, {user.name.split(" ")[0] || user.name}</h1>
           <p className="mt-2 max-w-3xl text-white/70">
-            Creá nuevos estilos para el catálogo e integrá todas las opciones disponibles del editor 3D desde un único lugar.
+            Creá nuevas fichas de producto con medidas, tipos, colores, precios y stock para mantener el catálogo siempre actualizado.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -61,50 +44,13 @@ export default async function ProductsAdminPage() {
       <div className="grid gap-10 xl:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-10">
           <ProductStyleForm />
-
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-white/60">Opciones del editor</h2>
-              <p className="mt-2 max-w-2xl text-sm text-white/60">
-                Gestioná tamaños, materiales, acabados y parámetros globales que estarán disponibles para todos los productos del catálogo.
-              </p>
-            </div>
-
-            <SizeForm sizes={sizes} />
-
-            <MaterialForm
-              title="Materiales"
-              subtitle="Define cartulinas, corrugados y sus multiplicadores de precio."
-              items={materials}
-            />
-
-            <FinishForm
-              title="Acabados"
-              subtitle="Agrega laminados, barnices y terminaciones especiales."
-              items={finishes}
-            />
-
-            <PrintSideForm
-              title="Caras impresas"
-              subtitle="Controla si ofrecemos impresión exterior, interior o ambas."
-              items={printSides}
-            />
-
-            <SpeedForm
-              title="Velocidades de producción"
-              subtitle="Define plazos estándar y express con su impacto en precio."
-              items={speeds}
-            />
-
-            <QuantityForm quantities={quantities} />
-          </div>
         </div>
 
         <ProductList
           items={productStyles.map((item) => ({
             id: item.id,
             primary: item.title,
-            secondary: `${item.description} · slug: ${item.slug} · ${item.configuration.sizes.length} medidas · ${item.configuration.materials.length} materiales`,
+            secondary: buildSecondaryLine(item),
             href: item.href,
           }))}
         />
@@ -172,4 +118,25 @@ function ProductList({ items }: ProductListProps) {
       )}
     </div>
   );
+}
+
+function buildSecondaryLine(item: Awaited<ReturnType<typeof getProductStyles>>[number]): string {
+  const segments: string[] = [];
+  if (item.description) {
+    segments.push(item.description);
+  }
+  if (item.configuration.product_type) {
+    segments.push(`Tipo: ${item.configuration.product_type}`);
+  }
+  if (item.configuration.possibilities.length > 0) {
+    segments.push(`Variantes: ${item.configuration.possibilities.length}`);
+  }
+  segments.push(`Slug: ${item.slug}`);
+  if (typeof item.configuration.stock === "number") {
+    segments.push(`Stock: ${item.configuration.stock}`);
+  }
+  if (typeof item.configuration.unit_price === "number") {
+    segments.push(`Precio: $${item.configuration.unit_price.toFixed(2)}`);
+  }
+  return segments.join(" · ");
 }
