@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 import { requireStaff } from "@/lib/auth";
 import { getMetrics, getTestimonials, getBrands } from "@/lib/content";
@@ -92,7 +93,7 @@ type ContentListProps = {
     id: number;
     primary: string;
     secondary?: string;
-    href?: string;
+    href?: Route;
   }>;
   deleteAction?: (formData: FormData) => Promise<void>;
 };

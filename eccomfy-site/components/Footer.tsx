@@ -1,7 +1,8 @@
 import Link from "next/link";
+import type { Route } from "next";
 
 export default function Footer() {
-  const navLinks = [
+  const navLinks: Array<{ href: Route; label: string }> = [
     { href: "/products", label: "Catálogo" },
     { href: "/design", label: "Diseñá online" },
     { href: "/contact", label: "Contacto" },
@@ -13,7 +14,7 @@ export default function Footer() {
     { href: "https://www.linkedin.com", label: "LinkedIn" },
   ];
 
-  const legalLinks = [
+  const legalLinks: Array<{ href: Route; label: string }> = [
     { href: "/terms", label: "Términos y condiciones" },
     { href: "/privacy", label: "Política de privacidad" },
   ];

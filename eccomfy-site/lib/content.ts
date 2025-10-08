@@ -1,3 +1,5 @@
+import type { Route } from "next";
+
 import db from "./db";
 
 export type ProductConfigurationSize = {
@@ -50,7 +52,7 @@ export type ProductStyle = {
   slug: string;
   title: string;
   description: string;
-  href: string;
+  href: Route;
   image: string;
   configuration: ProductConfiguration;
   position: number;
@@ -223,6 +225,10 @@ type ProductStyleRow = {
   position: number;
 };
 
+function ensureRoute(value: string): Route {
+  return (value.startsWith("/") ? value : `/${value}`) as Route;
+}
+
 export function getProductStyles(): ProductStyle[] {
   const rows = db
     .prepare<ProductStyleRow>(
@@ -234,7 +240,7 @@ export function getProductStyles(): ProductStyle[] {
     slug,
     title,
     description,
-    href,
+    href: ensureRoute(href),
     image,
     configuration: parseProductConfig(config),
     position,
@@ -246,7 +252,7 @@ export function getProductStyleBySlug(slug: string): ProductStyle | null {
     .prepare<ProductStyleRow>(
       "SELECT id, slug, title, description, href, image, config, position FROM product_styles WHERE slug = ? LIMIT 1",
     )
-    .get(slug);
+    .get(slug) as ProductStyleRow | undefined;
 
   if (!row) {
     return null;
@@ -257,7 +263,7 @@ export function getProductStyleBySlug(slug: string): ProductStyle | null {
     slug: row.slug,
     title: row.title,
     description: row.description,
-    href: row.href,
+    href: ensureRoute(row.href),
     image: row.image,
     configuration: parseProductConfig(row.config),
     position: row.position,
@@ -326,7 +332,7 @@ export function getMetrics(): Metric[] {
     .prepare<Metric & { position: number }>(
       "SELECT id, value, label FROM metrics ORDER BY position ASC"
     )
-    .all();
+    .all() as Array<Metric & { position: number }>;
   return rows.map(({ id, value, label }) => ({ id, value, label }));
 }
 
@@ -335,7 +341,7 @@ export function getTestimonials(): Testimonial[] {
     .prepare<Testimonial & { position: number }>(
       "SELECT id, quote, name, role, highlight FROM testimonials ORDER BY position ASC"
     )
-    .all();
+    .all() as Array<Testimonial & { position: number }>;
   return rows.map(({ id, quote, name, role, highlight }) => ({
     id,
     quote,
@@ -350,6 +356,6 @@ export function getBrands(): Brand[] {
     .prepare<Brand & { position: number }>(
       "SELECT id, name FROM brands ORDER BY position ASC"
     )
-    .all();
+    .all() as Array<Brand & { position: number }>;
   return rows.map(({ id, name }) => ({ id, name }));
 }

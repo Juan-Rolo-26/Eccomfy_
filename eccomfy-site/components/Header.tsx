@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
+import type { Route } from "next";
 import Logo from "./Logo";
 import { usePathname } from "next/navigation";
 
-const LinkItem = ({ href, children }: { href: string; children: React.ReactNode }) => {
+const LinkItem = ({ href, children }: { href: Route; children: React.ReactNode }) => {
   const active = usePathname() === href;
   return (
     <Link
@@ -25,24 +26,25 @@ type HeaderProps = {
 };
 
 export default function Header({ user }: HeaderProps) {
-  const navLinks = user?.is_staff
+  const navLinks: Array<{ href: Route; label: string }> = user?.is_staff
     ? [
         { href: "/products", label: "Productos" },
         { href: "/design", label: "Diseñar" },
         { href: "/admin/products", label: "Crear producto" },
         { href: "/admin/users", label: "Usuarios" },
         { href: "/admin/content", label: "Contenido" },
-        { href: "/admin/users", label: "Usuarios" },
         { href: "/account", label: "Mi cuenta" },
       ]
     : [
         { href: "/products", label: "Productos" },
         { href: "/design", label: "Diseñar" },
         {
-          href: user ? "/account" : "/login",
+          href: (user ? "/account" : "/login") as Route,
           label: user ? "Mi cuenta" : "Ingresar",
         },
       ];
+
+  const ctaHref: Route = user ? (user.is_staff ? "/admin/products" : "/design") : "/register";
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/15 bg-brand-blue/80 backdrop-blur">
@@ -56,7 +58,7 @@ export default function Header({ user }: HeaderProps) {
           ))}
         </nav>
         <Link
-          href={user ? (user.is_staff ? "/admin/products" : "/design") : "/register"}
+          href={ctaHref}
           className="inline-flex items-center justify-center rounded-lg bg-brand-yellow text-brand-navy px-4 py-2 font-semibold hover:opacity-95"
         >
           {user ? (user.is_staff ? "Panel admin" : "Nuevo diseño") : "Crear cuenta"}

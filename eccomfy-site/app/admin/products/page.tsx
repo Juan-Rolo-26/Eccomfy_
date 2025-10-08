@@ -43,17 +43,10 @@ export default async function ProductsAdminPage() {
 
       <div className="grid gap-10 xl:grid-cols-[1.2fr,0.8fr]">
         <div className="space-y-10">
-          <ProductStyleForm />
+          <ProductStyleForm defaultPosition={productStyles.length} />
         </div>
 
-        <ProductList
-          items={productStyles.map((item) => ({
-            id: item.id,
-            primary: item.title,
-            secondary: buildSecondaryLine(item),
-            href: item.href,
-          }))}
-        />
+        <ProductLibrary products={productStyles} />
       </div>
     </div>
   );
