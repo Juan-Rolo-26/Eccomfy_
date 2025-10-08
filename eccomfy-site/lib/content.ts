@@ -234,7 +234,7 @@ export function getProductStyles(): ProductStyle[] {
     .prepare<ProductStyleRow>(
       "SELECT id, slug, title, description, href, image, config, position FROM product_styles ORDER BY position ASC",
     )
-    .all() as ProductStyleRow[];
+    .all();
   return rows.map(({ id, slug, title, description, href, image, config, position }) => ({
     id,
     slug,

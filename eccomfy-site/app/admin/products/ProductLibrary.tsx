@@ -131,7 +131,11 @@ function EditProductForm({ product, onClose }: EditProductFormProps) {
   }, [state.success, onClose]);
 
   return (
-    <form action={action} className="space-y-6 rounded-[2rem] border border-white/15 bg-white/5 p-6">
+    <form
+      action={action}
+      encType="multipart/form-data"
+      className="space-y-6 rounded-[2rem] border border-white/15 bg-white/5 p-6"
+    >
       <input type="hidden" name="id" value={product.id} />
       <ProductFormFields defaults={defaults} hideHeader />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
