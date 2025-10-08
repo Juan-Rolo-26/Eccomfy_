@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 
 type Props = {
   title: string;
   desc: string;
-  href: string;
+  href: Route;
   img: string;
   badges?: string[];
   highlights?: string[];

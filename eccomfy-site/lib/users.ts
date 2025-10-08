@@ -33,10 +33,18 @@ export function getAllUsers(): UserSummary[] {
       email: string;
       is_staff: number;
       created_at: string;
+      email_verified_at: string | null;
     }>(
       "SELECT id, name, email, is_staff, created_at, email_verified_at FROM users ORDER BY created_at DESC",
     )
-    .all();
+    .all() as Array<{
+      id: number;
+      name: string;
+      email: string;
+      is_staff: number;
+      created_at: string;
+      email_verified_at: string | null;
+    }>;
   return rows.map(mapRow);
 }
 
