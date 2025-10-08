@@ -37,6 +37,12 @@ export type ProductConfiguration = {
   highlights: string[];
   min_quantity?: number | null;
   max_quantity?: number | null;
+  product_type?: string | null;
+  possibilities: string[];
+  stock?: number | null;
+  base_colors: string[];
+  serigraphy_colors: string[];
+  unit_price?: number | null;
 };
 
 export type ProductStyle = {
@@ -47,6 +53,7 @@ export type ProductStyle = {
   href: string;
   image: string;
   configuration: ProductConfiguration;
+  position: number;
 };
 
 export type Metric = {
@@ -81,6 +88,12 @@ const DEFAULT_CONFIGURATION: ProductConfiguration = {
   highlights: [],
   min_quantity: null,
   max_quantity: null,
+  product_type: null,
+  possibilities: [],
+  stock: null,
+  base_colors: [],
+  serigraphy_colors: [],
+  unit_price: null,
 };
 
 type RawProductConfig = Partial<Omit<ProductConfiguration, "min_quantity" | "max_quantity"> & {
@@ -157,6 +170,13 @@ function parseProductConfig(rawConfig: unknown): ProductConfiguration {
         }));
     };
 
+    const parseStringArray = (value: unknown): string[] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item.length > 0);
+    };
+
     return {
       sizes: normalizeSizes(parsed.sizes as ProductConfigurationSize[] | undefined),
       materials: normalizeMaterials(parsed.materials as ProductConfigurationMaterial[] | undefined),
@@ -170,6 +190,21 @@ function parseProductConfig(rawConfig: unknown): ProductConfiguration {
         : [],
       min_quantity: parseNumber(parsed.min_quantity),
       max_quantity: parseNumber(parsed.max_quantity),
+      product_type:
+        typeof parsed === "object" && parsed && "product_type" in parsed && typeof parsed.product_type === "string"
+          ? parsed.product_type
+          : null,
+      possibilities: parseStringArray((parsed as RawProductConfig & { possibilities?: unknown }).possibilities),
+      stock:
+        typeof parsed === "object" && parsed && "stock" in parsed
+          ? parseNumber((parsed as { stock?: unknown }).stock)
+          : null,
+      base_colors: parseStringArray((parsed as RawProductConfig & { base_colors?: unknown }).base_colors),
+      serigraphy_colors: parseStringArray((parsed as RawProductConfig & { serigraphy_colors?: unknown }).serigraphy_colors),
+      unit_price:
+        typeof parsed === "object" && parsed && "unit_price" in parsed
+          ? parseNumber((parsed as { unit_price?: unknown }).unit_price)
+          : null,
     };
   } catch (error) {
     console.error("parseProductConfig", error);
@@ -194,7 +229,7 @@ export function getProductStyles(): ProductStyle[] {
       "SELECT id, slug, title, description, href, image, config, position FROM product_styles ORDER BY position ASC",
     )
     .all();
-  return rows.map(({ id, slug, title, description, href, image, config }) => ({
+  return rows.map(({ id, slug, title, description, href, image, config, position }) => ({
     id,
     slug,
     title,
@@ -202,6 +237,7 @@ export function getProductStyles(): ProductStyle[] {
     href,
     image,
     configuration: parseProductConfig(config),
+    position,
   }));
 }
 
@@ -224,6 +260,7 @@ export function getProductStyleBySlug(slug: string): ProductStyle | null {
     href: row.href,
     image: row.image,
     configuration: parseProductConfig(row.config),
+    position: row.position,
   };
 }
 
@@ -242,12 +279,12 @@ export function summarizeProductStyle(style: ProductStyle): { badges: string[]; 
     badges.push(configuration.materials[0].label);
   }
 
-  if (configuration.colors.length > 0) {
-    badges.push(`${configuration.colors.length} colores`);
+  if (configuration.product_type) {
+    badges.push(configuration.product_type);
   }
 
-  if (configuration.productionSpeeds.length > 0) {
-    badges.push(configuration.productionSpeeds[0].label);
+  if (configuration.base_colors.length > 0) {
+    badges.push(`${configuration.base_colors.length} colores base`);
   }
 
   if (configuration.highlights.length > 0) {
@@ -261,12 +298,17 @@ export function summarizeProductStyle(style: ProductStyle): { badges: string[]; 
     if (configuration.max_quantity) {
       highlights.push(`Pedido máximo ${configuration.max_quantity} u.`);
     }
-    if (configuration.quantities.length > 0) {
-      const labels = configuration.quantities.map((quantity) => `${quantity.quantity} u.`);
-      highlights.push(`Presentaciones: ${labels.join(", ")}`);
+    if (configuration.possibilities.length > 0) {
+      highlights.push(`Variantes: ${configuration.possibilities.join(", ")}`);
+    }
+    if (configuration.stock !== null && configuration.stock !== undefined) {
+      highlights.push(`Stock: ${configuration.stock} u.`);
+    }
+    if (configuration.unit_price !== null && configuration.unit_price !== undefined) {
+      highlights.push(`Precio de referencia $${configuration.unit_price.toFixed(2)}`);
     }
     if (configuration.sizes.length > 1) {
-      highlights.push(`${configuration.sizes.length} medidas listas para usar.`);
+      highlights.push(`${configuration.sizes.length} medidas configuradas.`);
     }
   }
 
