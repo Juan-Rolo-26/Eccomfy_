@@ -195,10 +195,44 @@ function FieldSection({ title, description, children }: FieldSectionProps) {
         <p className="mt-1 text-[11px] text-white/50">La imagen se guardará en /public/productos/&lt;slug&gt;.</p>
       </label>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Medidas disponibles
-          <textarea
+      <FieldSection title="Imagen" description="Podés vincular una imagen existente o subir un archivo desde tu computadora.">
+        <Field label="Ruta de imagen pública" hint="Se usará si no cargás un archivo nuevo.">
+          <TextInput
+            name="image"
+            placeholder="/uploads/products/caja-botella.png"
+            defaultValue={defaults.image}
+          />
+        </Field>
+        <Field
+          label="Subir archivo"
+          hint="La imagen se guardará automáticamente en /public/uploads/products/."
+          className="md:col-span-2"
+        >
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <input
+              type="file"
+              name="imageFile"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              onChange={handleImageFileChange}
+              className="block w-full rounded-2xl border border-dashed border-white/25 bg-white/5 px-4 py-5 text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-white/90 file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-brand-navy hover:border-white/40"
+            />
+            {imagePreview ? (
+              <div className="relative h-20 w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 md:w-40">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={imagePreview} alt="Vista previa de la imagen" className="h-full w-full object-cover" />
+              </div>
+            ) : null}
+          </div>
+        </Field>
+      </FieldSection>
+
+      <FieldSection title="Medidas y variantes" description="Definí el tipo de producto, medidas y variantes comerciales disponibles.">
+        <Field
+          label="Medidas disponibles"
+          hint="Formato: Nombre|Ancho|Alto|Profundidad|Precio base (mm y USD)."
+          className="md:col-span-2"
+        >
+          <TextArea
             name="sizes"
             rows={4}
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
