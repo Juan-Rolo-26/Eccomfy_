@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
 import type { ProductStyle } from "@/lib/content";
@@ -138,132 +138,16 @@ type FieldSectionProps = {
 
 function FieldSection({ title, description, children }: FieldSectionProps) {
   return (
-    <section className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-5 shadow-inner shadow-brand-navy/5">
-      <header>
-        <h4 className="text-sm font-semibold text-white">{title}</h4>
-        <p className="mt-1 text-xs text-white/60">{description}</p>
-      </header>
-      <div className="grid gap-4 md:grid-cols-2">{children}</div>
-    </section>
-  );
-}
-
-type FieldProps = {
-  label: string;
-  children: ReactNode;
-  hint?: ReactNode;
-  className?: string;
-};
-
-function Field({ label, children, hint, className }: FieldProps) {
-  return (
-    <div className={`space-y-2 ${className ?? ""}`}>
-      <label className="flex flex-col gap-2">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">{label}</span>
-        {children}
-      </label>
-      {hint ? <p className="text-[11px] text-white/50">{hint}</p> : null}
-    </div>
-  );
-}
-
-type TextInputProps = {
-  name: string;
-  placeholder?: string;
-  defaultValue?: string;
-  type?: string;
-  required?: boolean;
-  min?: number;
-  step?: number | string;
-};
-
-function TextInput({ name, placeholder, defaultValue, type = "text", required, min, step }: TextInputProps) {
-  return (
-    <input
-      name={name}
-      type={type}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      required={required}
-      min={min}
-      step={step}
-      className="w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-    />
-  );
-}
-
-type TextAreaProps = {
-  name: string;
-  placeholder?: string;
-  defaultValue?: string;
-  required?: boolean;
-  rows?: number;
-};
-
-function TextArea({ name, placeholder, defaultValue, required, rows = 4 }: TextAreaProps) {
-  return (
-    <textarea
-      name={name}
-      defaultValue={defaultValue}
-      placeholder={placeholder}
-      required={required}
-      rows={rows}
-      className="w-full rounded-2xl border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-    />
-  );
-}
-
-type ProductFormFieldsProps = {
-  defaults: ProductFormDefaults;
-  hideHeader?: boolean;
-};
-
-export function ProductFormFields({ defaults, hideHeader = false }: ProductFormFieldsProps) {
-  const materialsPlaceholder = useMemo(
-    () => "Cartón kraft|Textura natural\nCartón reforzado|Doble pared",
-    [],
-  );
-  const [imagePreview, setImagePreview] = useState(defaults.image);
-  const objectUrlRef = useRef<string>();
-
-  useEffect(() => {
-    setImagePreview(defaults.image);
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = undefined;
-      }
-    };
-  }, [defaults.image]);
-
-  const handleImageFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const [file] = event.target.files ?? [];
-    if (!file) {
-      setImagePreview(defaults.image);
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = undefined;
-      }
-      return;
-    }
-
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = undefined;
-    }
-
-    const url = URL.createObjectURL(file);
-    objectUrlRef.current = url;
-    setImagePreview(url);
-  };
-
-  return (
-    <div className="space-y-6">
-      {!hideHeader && (
-        <div className="rounded-3xl border border-white/15 bg-brand-navy/40 p-5 text-white shadow-inner shadow-brand-navy/30">
-          <h3 className="text-xl font-semibold">Crear un nuevo producto</h3>
-          <p className="mt-1 text-sm text-white/60">
-            Reuní toda la información comercial y técnica para publicarla automáticamente en el catálogo y en el editor 3D.
+    <form
+      action={formAction}
+      encType="multipart/form-data"
+      className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur"
+    >
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-white">Crear producto</h3>
+          <p className="text-xs text-white/60">
+            Cargá toda la información comercial y técnica para que aparezca en el catálogo y el editor 3D.
           </p>
         </div>
       )}
@@ -285,9 +169,11 @@ export function ProductFormFields({ defaults, hideHeader = false }: ProductFormF
             defaultValue={defaults.description}
             required
           />
-        </Field>
-        <Field label="Posición en el listado">
-          <TextInput
+          <p className="mt-1 text-[11px] text-white/50">Podés cargar una ruta existente o subir una imagen debajo.</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Posición en el listado
+          <input
             name="position"
             type="number"
             min={0}
@@ -297,6 +183,17 @@ export function ProductFormFields({ defaults, hideHeader = false }: ProductFormF
           />
         </Field>
       </FieldSection>
+
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+        Imagen desde tu computadora
+        <input
+          type="file"
+          name="imageFile"
+          accept="image/*"
+          className="mt-2 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-brand-yellow file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-navy hover:file:bg-brand-yellow/90"
+        />
+        <p className="mt-1 text-[11px] text-white/50">La imagen se guardará en /public/productos/&lt;slug&gt;.</p>
+      </label>
 
       <FieldSection title="Imagen" description="Podés vincular una imagen existente o subir un archivo desde tu computadora.">
         <Field label="Ruta de imagen pública" hint="Se usará si no cargás un archivo nuevo.">
@@ -337,108 +234,123 @@ export function ProductFormFields({ defaults, hideHeader = false }: ProductFormF
         >
           <TextArea
             name="sizes"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
             placeholder={"Caja chica|120|80|40|1.85\nCaja grande|200|120|50|2.5"}
-            defaultValue={defaults.sizes}
             required
           />
-        </Field>
-        <Field label="Tipo de producto" hint="Por ejemplo: Caja, Bolsa, Tubo, etc.">
-          <TextInput name="productType" placeholder="Caja" defaultValue={defaults.productType} required />
-        </Field>
-        <Field label="Posibilidades (una por línea)" hint="Se mostrará como variantes sugeridas dentro del producto.">
-          <TextArea
-            name="possibilities"
-            placeholder={"Caja kraft\nCaja reforzada\nBolsa de poliéster"}
-            defaultValue={defaults.possibilities}
+          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Ancho|Alto|Profundidad|Precio base (mm y USD).</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Tipo de producto
+          <input
+            name="productType"
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder="Caja"
+            required
           />
-        </Field>
-        <Field label="Stock disponible" hint="Ingresá las unidades actualmente disponibles.">
-          <TextInput
+          <p className="mt-1 text-[11px] text-white/50">Por ejemplo: Caja, Bolsa, Tubo, etc.</p>
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Posibilidades (una por línea)
+          <textarea
+            name="possibilities"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Caja kraft\nCaja reforzada\nBolsa de poliéster"}
+          />
+          <p className="mt-1 text-[11px] text-white/50">Se mostrará como variantes sugeridas dentro del producto.</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Stock disponible
+          <input
             name="stock"
             type="number"
             min={0}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
             placeholder="250"
-            defaultValue={defaults.stock}
             required
           />
-        </Field>
-      </FieldSection>
+          <p className="mt-1 text-[11px] text-white/50">Ingresá las unidades actualmente disponibles.</p>
+        </label>
+      </div>
 
-      <FieldSection title="Colores y materiales" description="Configura opciones base y alternativas para serigrafía y materiales.">
-        <Field label="Colores base de las cajas" hint="Cargá un color por línea.">
-          <TextArea name="baseColors" placeholder={"Blanco\nKraft\nNegro"} defaultValue={defaults.baseColors} />
-        </Field>
-        <Field label="Colores disponibles para serigrafía" hint="Un color por línea, se suman al selector general.">
-          <TextArea
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Colores base de las cajas
+          <textarea
+            name="baseColors"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Blanco\nKraft\nNegro"}
+          />
+          <p className="mt-1 text-[11px] text-white/50">Cargá un color por línea.</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Colores disponibles para serigrafía
+          <textarea
             name="serigraphyColors"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
             placeholder={"Azul Eccomfy\nRojo Pantone 485\nVerde institucional"}
-            defaultValue={defaults.serigraphyColors}
           />
-        </Field>
-        <Field
-          label="Materiales (uno por línea)"
-          hint="Podés agregar descripción y multiplicador con el formato Nombre|Descripción|Multiplicador."
-          className="md:col-span-2"
-        >
-          <TextArea
-            name="materials"
-            placeholder={materialsPlaceholder}
-            defaultValue={defaults.materials}
-            required
-          />
-        </Field>
-      </FieldSection>
+          <p className="mt-1 text-[11px] text-white/50">Un color por línea, se suman al selector general.</p>
+        </label>
+      </div>
 
-      <FieldSection title="Precios y cantidades" description="Cargá precios de referencia y límites de compra para el producto.">
-        <Field label="Precio unitario de la caja (USD)">
-          <TextInput
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Precio unitario de la caja (USD)
+          <input
             name="unitPrice"
             type="number"
             step="0.01"
             min={0}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
             placeholder="5.90"
-            defaultValue={defaults.unitPrice}
             required
           />
-        </Field>
-        <Field label="Compra mínima">
-          <TextInput
-            name="minPurchase"
-            type="number"
-            min={0}
-            placeholder="100"
-            defaultValue={defaults.minPurchase}
-          />
-        </Field>
-        <Field label="Compra máxima">
-          <TextInput
-            name="maxPurchase"
-            type="number"
-            min={0}
-            placeholder="5000"
-            defaultValue={defaults.maxPurchase}
-          />
-        </Field>
-      </FieldSection>
-    </div>
-  );
-}
-
-export function ProductStyleForm({ defaultPosition }: { defaultPosition: number }) {
-  const [state, formAction] = useFormState(createProductStyleAction, INITIAL_STATE);
-  const defaults = useMemo(() => buildEmptyProductDefaults(defaultPosition), [defaultPosition]);
-
-  return (
-    <form
-      action={formAction}
-      encType="multipart/form-data"
-      className="space-y-6 rounded-[2.75rem] border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-white/10 p-8 shadow-xl shadow-brand-navy/20 backdrop-blur"
-    >
-      <ProductFormFields defaults={defaults} />
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <FormMessage state={state} />
-        <SubmitButton label="Guardar producto" />
+        </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            Compra mínima
+            <input
+              name="minPurchase"
+              type="number"
+              min={0}
+              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+              placeholder="100"
+            />
+          </label>
+          <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+            Compra máxima
+            <input
+              name="maxPurchase"
+              type="number"
+              min={0}
+              className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+              placeholder="5000"
+            />
+          </label>
+        </div>
       </div>
+
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+        Materiales (uno por línea)
+        <textarea
+          name="materials"
+          rows={4}
+          className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+          placeholder={"Cartón kraft|Textura natural\nCartón reforzado|Doble pared"}
+          required
+        />
+        <p className="mt-1 text-[11px] text-white/50">Podés agregar una descripción opcional usando el formato Nombre|Descripción.</p>
+      </label>
+
+      <FormMessage state={state} />
     </form>
   );
 }
