@@ -41,7 +41,11 @@ export function ProductStyleForm() {
   const [state, formAction] = useFormState(createProductStyleAction, INITIAL_STATE);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur">
+    <form
+      action={formAction}
+      encType="multipart/form-data"
+      className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 backdrop-blur"
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-white">Crear producto</h3>
@@ -91,9 +95,10 @@ export function ProductStyleForm() {
             placeholder="/productos/caja-botella.png"
             required
           />
+          <p className="mt-1 text-[11px] text-white/50">Podés cargar una ruta existente o subir una imagen debajo.</p>
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Posición
+          Posición en el listado
           <input
             name="position"
             type="number"
@@ -105,6 +110,17 @@ export function ProductStyleForm() {
         </label>
       </div>
 
+      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+        Imagen desde tu computadora
+        <input
+          type="file"
+          name="imageFile"
+          accept="image/*"
+          className="mt-2 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-brand-yellow file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-navy hover:file:bg-brand-yellow/90"
+        />
+        <p className="mt-1 text-[11px] text-white/50">La imagen se guardará en /public/productos/&lt;slug&gt;.</p>
+      </label>
+
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
           Medidas disponibles
@@ -112,86 +128,89 @@ export function ProductStyleForm() {
             name="sizes"
             rows={4}
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Pequeña|120|80|40|1.85\nGrande|200|120|50|2.5"}
+            placeholder={"Caja chica|120|80|40|1.85\nCaja grande|200|120|50|2.5"}
             required
           />
           <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Ancho|Alto|Profundidad|Precio base (mm y USD).</p>
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Materiales
-          <textarea
-            name="materials"
-            rows={4}
+          Tipo de producto
+          <input
+            name="productType"
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Cartulina premium|Ideal para retail|1\nKraft reciclado|Textura natural|1.1"}
+            placeholder="Caja"
             required
           />
-          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Descripción opcional|Multiplicador de precio.</p>
+          <p className="mt-1 text-[11px] text-white/50">Por ejemplo: Caja, Bolsa, Tubo, etc.</p>
         </label>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Acabados
+          Posibilidades (una por línea)
           <textarea
-            name="finishes"
+            name="possibilities"
             rows={4}
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Mate soft touch||1\nBarniz UV|Resalta logos|1.2"}
-            required
+            placeholder={"Caja kraft\nCaja reforzada\nBolsa de poliéster"}
           />
+          <p className="mt-1 text-[11px] text-white/50">Se mostrará como variantes sugeridas dentro del producto.</p>
         </label>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Caras impresas
-          <textarea
-            name="printSides"
-            rows={4}
+          Stock disponible
+          <input
+            name="stock"
+            type="number"
+            min={0}
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Exterior|Ideal para branding|1\nExterior e interior|Máximo impacto|1.35"}
+            placeholder="250"
             required
           />
-        </label>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Velocidades de producción
-          <textarea
-            name="productionSpeeds"
-            rows={4}
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Estándar|13-18 días hábiles|1\nRápida|7-9 días hábiles|1.3"}
-            required
-          />
-        </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Cantidades disponibles
-          <textarea
-            name="quantities"
-            rows={4}
-            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Caja de 100|100|1\nCaja de 500|500|0.85"}
-            required
-          />
+          <p className="mt-1 text-[11px] text-white/50">Ingresá las unidades actualmente disponibles.</p>
         </label>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-          Colores disponibles
+          Colores base de las cajas
           <textarea
-            name="colors"
+            name="baseColors"
             rows={4}
             className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-            placeholder={"Blanco|#FFFFFF|1\nNegro|#111111|1.05"}
+            placeholder={"Blanco\nKraft\nNegro"}
           />
-          <p className="mt-1 text-[11px] text-white/50">Formato: Nombre|Hex opcional|Multiplicador.</p>
+          <p className="mt-1 text-[11px] text-white/50">Cargá un color por línea.</p>
+        </label>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Colores disponibles para serigrafía
+          <textarea
+            name="serigraphyColors"
+            rows={4}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder={"Azul Eccomfy\nRojo Pantone 485\nVerde institucional"}
+          />
+          <p className="mt-1 text-[11px] text-white/50">Un color por línea, se suman al selector general.</p>
+        </label>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
+          Precio unitario de la caja (USD)
+          <input
+            name="unitPrice"
+            type="number"
+            step="0.01"
+            min={0}
+            className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
+            placeholder="5.90"
+            required
+          />
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-            Pedido mínimo sugerido
+            Compra mínima
             <input
-              name="minQuantity"
+              name="minPurchase"
               type="number"
               min={0}
               className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
@@ -199,9 +218,9 @@ export function ProductStyleForm() {
             />
           </label>
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-            Pedido máximo sugerido
+            Compra máxima
             <input
-              name="maxQuantity"
+              name="maxPurchase"
               type="number"
               min={0}
               className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
@@ -212,14 +231,17 @@ export function ProductStyleForm() {
       </div>
 
       <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
-        Highlights (separá cada punto en una línea)
+        Materiales (uno por línea)
         <textarea
-          name="highlights"
-          rows={3}
+          name="materials"
+          rows={4}
           className="mt-2 w-full rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-brand-yellow focus:outline-none focus:ring-2 focus:ring-brand-yellow/40"
-          placeholder={"Se entrega plegada\nIncluye solapas reforzadas"}
+          placeholder={"Cartón kraft|Textura natural\nCartón reforzado|Doble pared"}
+          required
         />
+        <p className="mt-1 text-[11px] text-white/50">Podés agregar una descripción opcional usando el formato Nombre|Descripción.</p>
       </label>
+
       <FormMessage state={state} />
     </form>
   );
